@@ -14,7 +14,7 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // 会員登録画面のカスタムビューを指定
+        // 会員登録画面のresources/views/auth/register.blade.php を使う
         Fortify::registerView(function () {
             return view('auth.register');
         });
