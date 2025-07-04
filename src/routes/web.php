@@ -16,4 +16,6 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 // 打刻画面
 Route::middleware(['auth'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
+    Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clockin');
 });
+

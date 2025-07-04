@@ -28,10 +28,17 @@
         <h2>{{ $date }}</h2>
         <h1 style="font-size: 48px;">{{ $time }}</h1>
 
-        <form method="POST" action="#">
+        <form method="POST" action="{{ route('attendance.clockin') }}">
             @csrf
             <button type="submit">出勤</button>
         </form>
+        @if (session('success'))
+        <p style="color: green">{{ session('success') }}</p>
+        @endif
+        @if (session('error'))
+        <p style="color: red">{{ session('error') }}</p>
+        @endif
+
     </main>
 </body>
 
