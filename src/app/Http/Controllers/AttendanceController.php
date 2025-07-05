@@ -32,7 +32,7 @@ class AttendanceController extends Controller
             }
 
             if ($attendance->clock_out) {
-                $status = '退勤済み';
+                $status = '退勤済';
             }
         }
 
@@ -45,6 +45,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $today = Carbon::today();
 
+        // 今日すでに出勤があるかチェックしてexistingに値があれば出勤済みと判断
         $existing = Attendance::where('user_id', $user->id)->where('date', $today)->first();
 
         if ($existing) {
@@ -108,9 +109,34 @@ class AttendanceController extends Controller
         $start = Carbon::parse($month)->startOfMonth();
         $end = Carbon::parse($month)->endOfMonth();
 
-        $attendances = Attendance::where('user_id', $user->id)
+        // 休憩データも取得する
+        $attendances = Attendance::with('breaks')
+            ->where('user_id', $user->id)
             ->whereBetween('date', [$start, $end])
             ->get();
+
+        foreach ($attendances as $attendance) {
+            if ($attendance->clock_in && $attendance->clock_out) {
+                $clockIn = Carbon::parse($attendance->clock_in);
+                $clockOut = Carbon::parse($attendance->clock_out);
+                $workMinutes = $clockOut->diffInMinutes($clockIn);
+
+                $breakMinutes = 0;
+                foreach ($attendance->breaks as $break) {
+                    if ($break->break_in && $break->break_out) {
+                        $in = Carbon::parse($break->break_in);
+                        $out = Carbon::parse($break->break_out);
+                        $breakMinutes += $out->diffInMinutes($in);
+                    }
+                }
+
+                $attendance->break_duration = floor($breakMinutes / 60) . 'h ' . ($breakMinutes % 60) . 'm';
+                $attendance->work_duration = floor(($workMinutes - $breakMinutes) / 60) . 'h ' . (($workMinutes - $breakMinutes) % 60) . 'm';
+            } else {
+                $attendance->break_duration = '-';
+                $attendance->work_duration = '-';
+            }
+        }
 
         return view('attendance.list', [
             'attendances' => $attendances,
@@ -119,6 +145,7 @@ class AttendanceController extends Controller
             'nextMonth' => Carbon::parse($month)->addMonth()->format('Y-m'),
         ]);
     }
+
 
     // 退勤処理
     public function clockOut(Request $request)

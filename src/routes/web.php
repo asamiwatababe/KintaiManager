@@ -13,6 +13,11 @@ Route::post('/register', [RegisterController::class, 'register']);
 //ログイン画面
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 
+// ログアウト遷移先
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
 // 打刻画面
 Route::middleware(['auth'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');

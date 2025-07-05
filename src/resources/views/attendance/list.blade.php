@@ -19,16 +19,9 @@
             border-bottom: 1px solid #ccc;
         }
 
-        .header,
-        .logo-text,
-        .register-container {
-            width: 90%;
-            margin: 0 auto;
-        }
-
         .month-nav {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             margin-top: 30px;
             gap: 30px;
@@ -50,8 +43,8 @@
 <body>
     <header class="header">
         <div class="logo-text">COACHTECH</div>
-        <nav style="float: right; margin-top: -30px;">
-            <a href="{{ route('attendance') }}" style="color: white; margin-left: 20px;">勤怠</a>
+        <nav>
+            <a href="#" style="color: white; margin-left: 20px;">勤怠</a>
             <a href="{{ route('attendance.list') }}" style="color: white; margin-left: 20px;">勤怠一覧</a>
             <a href="#" style="color: white; margin-left: 20px;">申請</a>
             <form method="POST" action="{{ route('logout') }}" style="display:inline;">
@@ -67,14 +60,14 @@
         <div class="month-nav">
             <form method="GET" action="{{ route('attendance.list') }}">
                 <input type="hidden" name="month" value="{{ $previousMonth }}">
-                <button>&lt; 前月</button>
+                <button class="prev-month-button">&lt; 前月</button>
             </form>
 
             <div class="month-title">{{ \Carbon\Carbon::parse($currentMonth)->format('Y/m') }}</div>
 
             <form method="GET" action="{{ route('attendance.list') }}">
                 <input type="hidden" name="month" value="{{ $nextMonth }}">
-                <button>翌月 &gt;</button>
+                <button class="prev-month-button">翌月 &gt;</button>
             </form>
         </div>
 

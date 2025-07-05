@@ -8,6 +8,14 @@ body {
 .header {
     background-color: black;
     padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav a {
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .logo-text {
@@ -61,7 +69,6 @@ button {
     font-size: 16px;
     border: none;
     cursor: pointer;
-    margin-top: 30px;
 }
 
 .login-link {
@@ -79,4 +86,31 @@ button {
     color: red;
     font-size: 14px;
     text-align: left;
+}
+
+.register-container form {
+    display: inline-block;
+    margin: 10px;
+}
+
+.register-container button {
+    font-size: 18px;
+    padding: 10px 30px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.register-container button[type="submit"] {
+    background-color: black;
+    color: white;
+}
+
+.register-container form:nth-of-type(2) button {
+    background-color: white;
+    color: black;
+}
+
+.prev-month-button {
+    color: black;
 }
