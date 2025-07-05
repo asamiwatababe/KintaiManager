@@ -14,12 +14,10 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // 会員登録画面のresources/views/auth/register.blade.php を使う
         Fortify::registerView(function () {
             return view('auth.register');
         });
 
-        // ログイン画面のカスタムビューを指定（必要であれば）
         Fortify::loginView(function () {
             return view('auth.login');
         });

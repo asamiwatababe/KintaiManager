@@ -25,6 +25,6 @@ class RegisterController extends Controller
 
         Auth::login($user); // 登録後ログイン
 
-        return redirect('/dashboard'); // 登録後に遷移するページ
+        return redirect('/attendance'); // 登録後に遷移するページ
     }
 }

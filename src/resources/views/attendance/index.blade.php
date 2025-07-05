@@ -12,7 +12,7 @@
         <div class="logo-text">COACHTECH</div>
         <nav style="float: right; margin-top: -30px;">
             <a href="#" style="color: white; margin-left: 20px;">勤怠</a>
-            <a href="#" style="color: white; margin-left: 20px;">勤怠一覧</a>
+            <a href="{{ route('attendance.list') }}" style="color: white; margin-left: 20px;">勤怠一覧</a>
             <a href="#" style="color: white; margin-left: 20px;">申請</a>
             <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                 @csrf
@@ -32,11 +32,28 @@
             @csrf
             <button type="submit">出勤</button>
         </form>
-        @if (session('success'))
-        <p style="color: green">{{ session('success') }}</p>
+
+        {{-- 休憩・休憩戻・退勤ボタンを出勤の下に表示 --}}
+        @if ($status === '出勤中')
+        <form method="POST" action="{{ route('attendance.breakin') }}">
+            @csrf
+            <button type="submit">休憩</button>
+        </form>
         @endif
-        @if (session('error'))
-        <p style="color: red">{{ session('error') }}</p>
+
+        @if ($status === '休憩中')
+        <form method="POST" action="{{ route('attendance.breakout') }}">
+            @csrf
+            <button type="submit">休憩戻</button>
+        </form>
+        @endif
+
+        {{-- 退勤ボタン --}}
+        @if ($status === '出勤中' || $status === '休憩戻')
+        <form method="POST" action="{{ route('attendance.clockout') }}">
+            @csrf
+            <button type="submit">退勤</button>
+        </form>
         @endif
 
     </main>

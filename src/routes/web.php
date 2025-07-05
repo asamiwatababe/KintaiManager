@@ -19,3 +19,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clockin');
 });
 
+// 休憩ボタンの処理
+Route::middleware(['auth'])->group(function () {
+    Route::post('/attendance/break-in', [AttendanceController::class, 'breakIn'])->name('attendance.breakin');
+    Route::post('/attendance/break-out', [AttendanceController::class, 'breakOut'])->name('attendance.breakout');
+});
+
+// 勤怠一覧画面
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/attendance/{id}/detail', [AttendanceController::class, 'showDetail'])->name('attendance.detail');
+});
+
+// 退勤の処理
+Route::post('/attendance/clockout', [AttendanceController::class, 'clockOut'])->name('attendance.clockout');
