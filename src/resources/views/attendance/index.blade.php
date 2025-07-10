@@ -22,17 +22,6 @@
     </header>
 
     <main class="register-container">
-        <!-- <div>
-            <span style="background: #eee; padding: 5px 10px; border-radius: 10px; font-size: 12px;">勤務外</span>
-        </div> -->
-        <!-- <h2>{{ $date }}</h2>
-        <h1 style="font-size: 48px;">{{ $time }}</h1>
-
-        <form method="POST" action="{{ route('attendance.clockin') }}">
-            @csrf
-            <button type="submit">出勤</button>
-        </form> -->
-
         {{-- ステータスバッジ --}}
         @if ($status === '未出勤')
         <span style="background: #eee; padding: 5px 10px; border-radius: 10px; font-size: 12px;">勤務外</span>

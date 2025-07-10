@@ -38,3 +38,11 @@ Route::middleware(['auth'])->group(function () {
 
 // 退勤の処理
 Route::post('/attendance/clockout', [AttendanceController::class, 'clockOut'])->name('attendance.clockout');
+
+// 承認待ち画面
+Route::get('/attendance/{id}/pending', [AttendanceController::class, 'showPending'])->name('attendance.pending');
+
+// 勤怠修正の更新
+Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
+
+Route::get('/attendance/{id}', [AttendanceController::class, 'showDetail'])->name('attendance.show');

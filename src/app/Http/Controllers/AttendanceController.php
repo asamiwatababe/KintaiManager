@@ -90,15 +90,24 @@ class AttendanceController extends Controller
         return redirect()->back();
     }
 
-    public function showDetail(Request $request)
+    public function showDetail($id)
     {
-        $user = $request->user();
+        $attendance = Attendance::with(['breaks', 'user'])->findOrFail($id);
+        $breaks = $attendance->breaks->sortBy('break_in')->values();
+        $user = $attendance->user; // ← 勤怠記録の本人を取得
 
-        $breaks = BreakTime::whereHas('attendance', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->orderBy('break_in', 'asc')->get();
+        return view('attendance.detail', compact('user', 'attendance', 'breaks'));
+    }
 
-        return view('attendance.detail', compact('breaks'));
+
+    // 承認待ち画面
+    public function showPending($id)
+    {
+        $attendance = Attendance::with('breaks', 'user')->findOrFail($id);
+        $user = $attendance->user;
+        $breaks = $attendance->breaks->sortBy('break_in')->values();
+
+        return view('attendance.pending_detail', compact('attendance', 'user', 'breaks'));
     }
 
     public function list(Request $request)
@@ -170,5 +179,36 @@ class AttendanceController extends Controller
         ]);
 
         return redirect()->route('attendance')->with('success', 'お疲れ様でした。');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+
+        // 勤怠の更新
+        $attendance->clock_in = $request->clock_in;
+        $attendance->clock_out = $request->clock_out;
+        $attendance->note = $request->note;
+
+        // ここでステータスを「承認待ち」に更新
+        $attendance->status = 'pending';
+
+        $attendance->save();
+
+        // 既存の休憩をすべて削除してから再登録
+        $attendance->breaks()->delete();
+
+        // 再保存（休憩が複数あってもOK）
+        $breaks = $request->input('breaks', []);
+        foreach ($breaks as $break) {
+            if (!empty($break['break_in']) || !empty($break['break_out'])) {
+                $attendance->breaks()->create([
+                    'break_in' => Carbon::parse($attendance->date . ' ' . $break['break_in']),
+                    'break_out' => Carbon::parse($attendance->date . ' ' . $break['break_out']),
+                ]);
+            }
+        }
+
+        return redirect()->route('attendance.show', $attendance->id)->with('message', '更新しました');
     }
 }

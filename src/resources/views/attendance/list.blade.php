@@ -90,7 +90,13 @@
                     <td>{{ $attendance->clock_out ?? '-' }}</td>
                     <td>{{ $attendance->break_duration ?? '-' }}</td>
                     <td>{{ $attendance->work_duration ?? '-' }}</td>
-                    <td><a href="{{ route('attendance.detail', $attendance->id) }}">詳細</a></td>
+                    <!-- statusがpendingの場合は承認待ち画面に遷移 -->
+                    <td>@if ($attendance->status === 'pending')
+                        <a href="{{ route('attendance.pending', $attendance->id) }}">詳細</a>
+                        @else
+                        <a href="{{ route('attendance.detail', $attendance->id) }}">詳細</a>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
