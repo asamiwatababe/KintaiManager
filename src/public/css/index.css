@@ -1,0 +1,15 @@
+span {
+    background: #eee;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+h1 {
+    font-size: 48px;
+}
+
+p {
+    test-align: center;
+    font-wight: bold;
+    margin-top: 30px;
+}

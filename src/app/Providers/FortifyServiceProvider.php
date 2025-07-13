@@ -21,7 +21,11 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(function () {
             return view('auth.login');
         });
-    }
 
+        // 管理者のログイン
+        Fortify::loginView(function () {
+            return request()->is('admin/*') ? view('admin.auth.login') : view('auth.login');
+        });
+    }
     
 }

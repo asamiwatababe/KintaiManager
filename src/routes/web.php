@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StampCorrectionRequestController;
+use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\Auth\AdminLoginController;
 
 //会員登録画面
 Route::get('/register', [RegisterController::class, 'show'])->name('register');
@@ -46,3 +49,20 @@ Route::get('/attendance/{id}/pending', [AttendanceController::class, 'showPendin
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
 
 Route::get('/attendance/{id}', [AttendanceController::class, 'showDetail'])->name('attendance.show');
+
+// 申請一覧画面
+Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'list'])
+    ->name('stamp_correction_request.list');
+
+
+Route::get('/stamp_correction_request/detail/{id}', [AttendanceController::class, 'showPending'])
+    ->name('stamp_correction_request.detail');
+
+// 管理者のログイン画面
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
+
+// 管理者ログイン処理
+Route::post('/admin/login', [AdminLoginController::class, 'login']);
+
+// 管理者の勤怠一覧画面
+Route::get('/admin/attendance/list', [AdminAttendanceController::class, 'list'])->name('admin.attendance.list');

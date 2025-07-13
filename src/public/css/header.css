@@ -1,0 +1,35 @@
+body {
+    margin: unset;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: black;
+    padding: 15px 30px;
+}
+
+.logo-text {
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+}
+
+nav a,
+nav button {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+nav form {
+    display: inline;
+}
+
+nav button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
