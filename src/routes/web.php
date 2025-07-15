@@ -58,8 +58,10 @@ Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::
 Route::get('/stamp_correction_request/detail/{id}', [AttendanceController::class, 'showPending'])
     ->name('stamp_correction_request.detail');
 
-// 管理者のログイン画面
-Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
+// 管理者ログイン画面
+Route::get('/admin/login', function () {
+    return view('admin.auth.login');
+})->name('admin.login');
 
 // 管理者ログイン処理
 Route::post('/admin/login', [AdminLoginController::class, 'login']);

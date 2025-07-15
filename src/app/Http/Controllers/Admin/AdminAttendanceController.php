@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use Carbon\Carbon;
-// use App\Http\Controllers\Admin\AdminAttendanceController;
 
 class AdminAttendanceController extends Controller
 {
