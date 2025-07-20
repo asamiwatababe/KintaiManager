@@ -7,6 +7,8 @@ use Illuminate\Support\Carbon;
 use App\Models\Attendance;
 use App\Models\BreakTime;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
@@ -90,16 +92,6 @@ class AttendanceController extends Controller
         return redirect()->back();
     }
 
-    public function showDetail($id)
-    {
-        $attendance = Attendance::with(['breaks', 'user'])->findOrFail($id);
-        $breaks = $attendance->breaks->sortBy('break_in')->values();
-        $user = $attendance->user; // ← 勤怠記録の本人を取得
-
-        return view('attendance.detail', compact('user', 'attendance', 'breaks'));
-    }
-
-
     // 承認待ち画面
     public function showPending($id)
     {
@@ -181,34 +173,106 @@ class AttendanceController extends Controller
         return redirect()->route('attendance')->with('success', 'お疲れ様でした。');
     }
 
-    public function update(Request $request, $id)
+    // 管理者か一般ユーザーかでビューを分ける処理
+    public function showDetail($id)
+    {
+        $attendance = Attendance::with(['breaks', 'user'])->findOrFail($id);
+        $breaks = $attendance->breaks->sortBy('break_in')->values();
+        $user = $attendance->user;
+
+        // 管理者なら管理者ビューへ
+        if (auth()->user()->is_admin ?? false) {
+            return view('admin.attendance.admindetail', compact('attendance', 'breaks', 'user'));
+        }
+
+        // 一般ユーザーなら通常のビューへ
+        return view('attendance.detail', compact('attendance', 'breaks', 'user'));
+    }
+
+
+    // 一般ユーザーの修正申請
+    public function requestUpdate(Request $request, $id)
     {
         $attendance = Attendance::findOrFail($id);
 
-        // 勤怠の更新
-        $attendance->clock_in = $request->clock_in;
-        $attendance->clock_out = $request->clock_out;
-        $attendance->note = $request->note;
+        $validator = Validator::make($request->all(), [
+            'clock_in' => 'required|date_format:H:i',
+            'clock_out' => 'required|date_format:H:i|after:clock_in',
+            'breaks.*.break_in' => 'nullable|date_format:H:i',
+            'breaks.*.break_out' => 'nullable|date_format:H:i|after:breaks.*.break_in',
+            'note' => 'required|string|max:255',
+        ], [
+            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です。',
+            'breaks.*.break_out.after' => '休憩時間が勤務時間外です。',
+            'note.required' => '備考を記入してください。',
+        ]);
 
-        // ここでステータスを「承認待ち」に更新
-        $attendance->status = 'pending';
-
-        $attendance->save();
-
-        // 既存の休憩をすべて削除してから再登録
-        $attendance->breaks()->delete();
-
-        // 再保存（休憩が複数あってもOK）
-        $breaks = $request->input('breaks', []);
-        foreach ($breaks as $break) {
-            if (!empty($break['break_in']) || !empty($break['break_out'])) {
-                $attendance->breaks()->create([
-                    'break_in' => Carbon::parse($attendance->date . ' ' . $break['break_in']),
-                    'break_out' => Carbon::parse($attendance->date . ' ' . $break['break_out']),
-                ]);
-            }
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
         }
 
-        return redirect()->route('attendance.show', $attendance->id)->with('message', '更新しました');
+        DB::transaction(function () use ($attendance, $request) {
+            $attendance->update([
+                'clock_in' => $request->clock_in,
+                'clock_out' => $request->clock_out,
+                'note' => $request->note,
+                'status' => 'pending',
+            ]);
+
+            $attendance->breaks()->delete();
+            foreach ($request->input('breaks', []) as $break) {
+                if (!empty($break['break_in']) || !empty($break['break_out'])) {
+                    $attendance->breaks()->create([
+                        'break_in' => Carbon::parse($attendance->date . ' ' . $break['break_in']),
+                        'break_out' => Carbon::parse($attendance->date . ' ' . $break['break_out']),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route('attendance.detail', $id)->with('success', '修正申請が完了しました。');
+    }
+
+    // 管理者による直接修正
+    public function adminUpdate(Request $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'clock_in' => 'required|date_format:H:i',
+            'clock_out' => 'required|date_format:H:i|after:clock_in',
+            'breaks.*.break_in' => 'nullable|date_format:H:i',
+            'breaks.*.break_out' => 'nullable|date_format:H:i|after:breaks.*.break_in',
+            'note' => 'required|string|max:255',
+        ], [
+            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です。',
+            'breaks.*.break_out.after' => '休憩時間が勤務時間外です。',
+            'note.required' => '備考を記入してください。',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        DB::transaction(function () use ($attendance, $request) {
+            $attendance->update([
+                'clock_in' => $request->clock_in,
+                'clock_out' => $request->clock_out,
+                'note' => $request->note,
+                'status' => 'approved', // 承認済み状態にするなど適宜変更可
+            ]);
+
+            $attendance->breaks()->delete();
+            foreach ($request->input('breaks', []) as $break) {
+                if (!empty($break['break_in']) || !empty($break['break_out'])) {
+                    $attendance->breaks()->create([
+                        'break_in' => Carbon::parse($attendance->date . ' ' . $break['break_in']),
+                        'break_out' => Carbon::parse($attendance->date . ' ' . $break['break_out']),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route('attendance.detail', $id)->with('success', '勤怠情報を修正しました。');
     }
 }
