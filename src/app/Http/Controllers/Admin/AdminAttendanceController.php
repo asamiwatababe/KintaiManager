@@ -166,4 +166,19 @@ class AdminAttendanceController extends Controller
 
         return $response;
     }
+
+    // 勤怠詳細画面の修正ボタンをクリック
+    public function adminUpdate(Request $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+        $attendance->update([
+            'clock_in' => $request->input('clock_in'),
+            'clock_out' => $request->input('clock_out'),
+            'break_start' => $request->input('break_start'),
+            'break_end' => $request->input('break_end'),
+            'memo' => $request->input('memo'),
+        ]);
+
+        return redirect()->back()->with('success', '勤怠情報を更新しました。');
+    }
 }

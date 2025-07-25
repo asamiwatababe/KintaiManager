@@ -230,7 +230,8 @@ class AttendanceController extends Controller
             }
         });
 
-        return redirect()->route('attendance.detail', $id)->with('success', '修正申請が完了しました。');
+        return redirect()->route('attendance.show', ['id' => $attendance->id])
+            ->with('success', '修正申請が完了しました。');
     }
 
     // 管理者による直接修正

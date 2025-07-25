@@ -8,9 +8,10 @@
 
 @section('content')
 <h2 class="title">勤怠詳細</h2>
-<form method="POST" action="{{ route('attendance.update', $attendance->id) }}">
+<form method="POST" action="{{ route('admin.attendance.update', $attendance->id) }}">
     @csrf
     @method('PUT')
+
     <table>
         <tr>
             <th>名前</th>

@@ -44,7 +44,7 @@
                     <td>@if ($attendance->status === 'pending')
                         <a href="{{ route('attendance.pending', $attendance->id) }}">詳細</a>
                         @else
-                        <a href="{{ route('attendance.detail', $attendance->id) }}">詳細</a>
+                        <a href="{{ route('attendance.show', $attendance->id) }}">詳細</a>
                         @endif
                     </td>
                 </tr>

@@ -1,66 +1,46 @@
-<!DOCTYPE html>
-<html lang="ja">
+@extends('layouts.admin_app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>管理者勤怠一覧</title>
-    <link rel="stylesheet" href="{{ asset('css/header.css') }}">
-</head>
+@section('title', '管理者勤怠一覧')
 
-<body>
-    <header class="header">
-        <div class="logo-text">COACHTECH</div>
-        <nav>
-            <a href="{{ route('admin.attendance.list') }}">勤怠一覧</a>
-            <a href="{{ route('admin.staff.list') }}">スタッフ一覧</a>
-            <a href="{{ route('stamp_correction_request.list') }}">申請一覧</a>
-            <form method="POST" action="{{ route('admin.logout') }}">
-                @csrf
-                <button type="submit">ログアウト</button>
-            </form>
-        </nav>
-    </header>
-    <div class="container">
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/header.css') }}">
+@endsection
 
-        <main class="register-container">
-            <h2>{{ \Carbon\Carbon::parse($currentDate)->format('Y年n月j日') }}の勤怠</h2>
+@section('content')
+<main class="register-container">
+    <h2>{{ \Carbon\Carbon::parse($currentDate)->format('Y年n月j日') }}の勤怠</h2>
 
-            <div class="date-nav">
-                <a href="{{ route('admin.attendance.list', ['date' => $previousDate]) }}">← 前日</a>
-                <span>{{ \Carbon\Carbon::parse($currentDate)->format('Y/m/d') }}</span>
-                <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日 →</a>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>名前</th>
-                        <th>出勤</th>
-                        <th>退勤</th>
-                        <th>休憩</th>
-                        <th>合計</th>
-                        <th>詳細</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($attendances as $attendance)
-                    <tr>
-                        <td>{{ optional($attendance->user)->name ?? '-' }}</td>
-                        <td>{{ $attendance->clock_in ?? '' }}</td>
-                        <td>{{ $attendance->clock_out ?? '' }}</td>
-                        <td>{{ $attendance->break_duration ?? '-' }}</td>
-                        <td>{{ $attendance->work_duration ?? '-' }}</td>
-                        <td>
-                            <a href="{{ route('admin.attendance.show', $attendance->id) }}">詳細</a>
-
-
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-        </main>
+    <div class="date-nav">
+        <a href="{{ route('admin.attendance.list', ['date' => $previousDate]) }}">← 前日</a>
+        <span>{{ \Carbon\Carbon::parse($currentDate)->format('Y/m/d') }}</span>
+        <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日 →</a>
     </div>
-</body>
 
-</html>
+    <table>
+        <thead>
+            <tr>
+                <th>名前</th>
+                <th>出勤</th>
+                <th>退勤</th>
+                <th>休憩</th>
+                <th>合計</th>
+                <th>詳細</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($attendances as $attendance)
+            <tr>
+                <td>{{ optional($attendance->user)->name ?? '-' }}</td>
+                <td>{{ $attendance->clock_in ?? '' }}</td>
+                <td>{{ $attendance->clock_out ?? '' }}</td>
+                <td>{{ $attendance->break_duration ?? '-' }}</td>
+                <td>{{ $attendance->work_duration ?? '-' }}</td>
+                <td>
+                    <a href="{{ route('admin.attendance.show', $attendance->id) }}">詳細</a>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</main>
+@endsection

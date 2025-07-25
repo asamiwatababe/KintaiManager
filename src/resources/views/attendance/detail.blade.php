@@ -10,6 +10,13 @@
 <div class="container">
     <h2>勤怠詳細</h2>
 
+    {{-- 成功メッセージ --}}
+    @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <form method="POST" action="{{ route('attendance.update', $attendance->id) }}">
         @csrf
         @method('PUT')
