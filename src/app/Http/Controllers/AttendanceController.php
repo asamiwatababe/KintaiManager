@@ -212,6 +212,7 @@ class AttendanceController extends Controller
         }
 
         DB::transaction(function () use ($attendance, $request) {
+            // 勤怠情報の更新
             $attendance->update([
                 'clock_in' => $request->clock_in,
                 'clock_out' => $request->clock_out,
@@ -219,6 +220,7 @@ class AttendanceController extends Controller
                 'status' => 'pending',
             ]);
 
+            // 休憩時間の更新
             $attendance->breaks()->delete();
             foreach ($request->input('breaks', []) as $break) {
                 if (!empty($break['break_in']) || !empty($break['break_out'])) {
@@ -228,10 +230,21 @@ class AttendanceController extends Controller
                     ]);
                 }
             }
+
+            // 👇 修正申請テーブルに登録
+            StampCorrectionRequest::create([
+                'user_id' => auth()->id(),
+                'date' => $attendance->date,
+                'clock_in' => $request->clock_in,
+                'clock_out' => $request->clock_out,
+                'break_in' => $request->breaks[0]['break_in'] ?? null, // 任意で
+                'break_out' => $request->breaks[0]['break_out'] ?? null,
+                'note' => $request->note,
+                'status' => 'pending',
+            ]);
         });
 
-        return redirect()->route('attendance.show', ['id' => $attendance->id])
-            ->with('success', '修正申請が完了しました。');
+        return redirect()->route('attendance.show', $attendance->id)->with('success', '修正申請が完了しました。');
     }
 
     // 管理者による直接修正

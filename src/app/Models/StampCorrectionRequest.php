@@ -11,11 +11,16 @@ class StampCorrectionRequest extends Model
 
     protected $fillable = [
         'user_id',
-        'target_date',
-        'reason',
-        'request_date',
+        'date',
+        'clock_in',
+        'clock_out',
+        'break_in',
+        'break_out',
+        'note',
         'status',
+        'admin_comment',
     ];
+
 
     /**
      * ユーザーとのリレーション

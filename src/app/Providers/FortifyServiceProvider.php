@@ -14,6 +14,9 @@ use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
 use App\Http\Responses\LoginResponse as CustomLoginResponse;
 use App\Http\Responses\LogoutResponse as CustomLogoutResponse;
+use Laravel\Fortify\Contracts\CreatesNewUsers;
+use App\Actions\Fortify\CreateNewUser;
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -22,6 +25,8 @@ class FortifyServiceProvider extends ServiceProvider
         // Fortifyのレスポンスをカスタムクラスで置き換える
         $this->app->singleton(LoginResponse::class, CustomLoginResponse::class);
         $this->app->singleton(LogoutResponse::class, CustomLogoutResponse::class);
+        // ユーザー登録時の処理をFortifyに認識させる
+        $this->app->singleton(CreatesNewUsers::class, CreateNewUser::class);
     }
 
     public function boot()
