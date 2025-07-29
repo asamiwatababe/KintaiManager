@@ -42,35 +42,55 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         // 認証ロジック（管理者ログインURLでは is_admin = true のみ通す）
+        // Fortify::authenticateUsing(function (Request $request) {
+        //     $user = User::where('email', $request->email)->first();
+
+        //     if ($user && Hash::check($request->password, $user->password)) {
+        //         if ($request->is('admin/login') && !$user->is_admin) {
+        //             return null;
+        //         }
+
+        //         // ここでセッションに管理者フラグを保存
+        //         session(['is_admin' => $user->is_admin]);
+
+        //         return $user;
+        //     }
+
+        //     return null;
+        // });
+
+        // Fortify::authenticateUsing(function (Request $request) {
+        //     $user = User::where('email', $request->email)->first();
+
+        //     if (
+        //         $user &&
+        //         Hash::check($request->password, $user->password) &&
+        //         $user->is_admin === 0 // 管理者はログイン不可にする
+        //     ) {
+        //         return $user;
+        //     }
+
+        //     // ログイン拒否
+        //     return null;
+        // });
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', $request->email)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
+                // 管理者ログインURLで、is_adminがfalseならNG
                 if ($request->is('admin/login') && !$user->is_admin) {
                     return null;
                 }
 
-                // ここでセッションに管理者フラグを保存
-                session(['is_admin' => $user->is_admin]);
+                // 一般ユーザーURLで、is_adminがtrueならNG
+                if (!$request->is('admin/login') && $user->is_admin) {
+                    return null;
+                }
 
+                // どちらも通過
                 return $user;
             }
 
-            return null;
-        });
-
-        Fortify::authenticateUsing(function (Request $request) {
-            $user = User::where('email', $request->email)->first();
-
-            if (
-                $user &&
-                Hash::check($request->password, $user->password) &&
-                $user->is_admin === 0 // 管理者はログイン不可にする
-            ) {
-                return $user;
-            }
-
-            // ログイン拒否
             return null;
         });
     }
