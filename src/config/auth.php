@@ -107,5 +107,8 @@ return [
     */
 
     'password_timeout' => 10800,
+    'failed' => 'ログイン情報が登録されていません',
+    'throttle' => 'ログイン試行が多すぎます。 :seconds 秒後に再試行してください。',
+
 
 ];

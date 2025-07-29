@@ -18,6 +18,11 @@ class AdminLoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            if (!Auth::user()->is_admin) {
+                Auth::logout(); // 一般ユーザーは即ログアウト
+                return back()->withErrors(['email' => '管理者アカウントではありません']);
+            }
+
             return redirect()->intended('/admin/attendance/list');
         }
 

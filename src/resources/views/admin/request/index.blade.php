@@ -33,7 +33,9 @@
             <td>{{ $request->target_date }}</td>
             <td>{{ $request->reason }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td><a href="{{ route('stamp_correction_request.show', $request->id) }}">詳細</a></td>
+            <td>
+            <td><a href="{{ url('/attendance/' . $request->attendance_id) }}">詳細</a></td>
+            </td>
         </tr>
         @endforeach
     </tbody>

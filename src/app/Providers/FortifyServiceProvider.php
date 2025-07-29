@@ -31,11 +31,6 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // 提出する際は外す
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::none();
-        });
-
         // 会員登録画面
         Fortify::registerView(function () {
             return view('auth.register');
@@ -61,6 +56,21 @@ class FortifyServiceProvider extends ServiceProvider
                 return $user;
             }
 
+            return null;
+        });
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if (
+                $user &&
+                Hash::check($request->password, $user->password) &&
+                $user->is_admin === 0 // 管理者はログイン不可にする
+            ) {
+                return $user;
+            }
+
+            // ログイン拒否
             return null;
         });
     }

@@ -75,3 +75,29 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #555;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    background-color: #f0f0f0;
+    margin-right: 5px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-weight: bold;
+}
+
+.tab.active {
+    background-color: white;
+    color: black;
+    border-bottom: 2px solid white;
+}
