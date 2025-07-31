@@ -3,19 +3,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-/**
- * @property string $break_duration
- * @property string $work_duration
- */
+use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'date', 'clock_in', 'clock_out', 'status'];
+    protected $fillable = [
+        'user_id',
+        'date',
+        'clock_in',
+        'clock_out',
+        'note',
+        'status'
+    ];
 
     public function user()
     {
@@ -25,5 +27,10 @@ class Attendance extends Model
     public function breaks()
     {
         return $this->hasMany(BreakTime::class);
+    }
+
+    public function correctionRequest()
+    {
+        return $this->hasOne(StampCorrectionRequest::class);
     }
 }

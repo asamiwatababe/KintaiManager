@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 // use App\Http\Requests\StampCorrectionRequest;
 use App\Models\StampCorrectionRequest;
+use Illuminate\Support\Facades\Log;
+
 
 
 class AttendanceController extends Controller
@@ -179,23 +181,16 @@ class AttendanceController extends Controller
     // 管理者か一般ユーザーかでビューを分ける処理
     public function showDetail($id)
     {
-        $attendance = Attendance::with(['breaks', 'user'])->findOrFail($id);
+        $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
         $breaks = $attendance->breaks->sortBy('break_in')->values();
         $user = $attendance->user;
 
-        // 管理者なら管理者ビューへ
-        if (auth()->user()->is_admin ?? false) {
-            return view('admin.attendance.admindetail', compact('attendance', 'breaks', 'user'));
-        }
-
-        // 一般ユーザーなら通常のビューへ
         return view('attendance.detail', compact('attendance', 'breaks', 'user'));
     }
 
-
-    // 一般ユーザーの修正申請
     public function requestUpdate(Request $request, $id)
     {
+        Log::info('requestUpdate called', ['id' => $id]);
         $attendance = Attendance::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
@@ -204,10 +199,6 @@ class AttendanceController extends Controller
             'breaks.*.break_in' => 'nullable|date_format:H:i',
             'breaks.*.break_out' => 'nullable|date_format:H:i|after:breaks.*.break_in',
             'note' => 'required|string|max:255',
-        ], [
-            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です。',
-            'breaks.*.break_out.after' => '休憩時間が勤務時間外です。',
-            'note.required' => '備考を記入してください。',
         ]);
 
         if ($validator->fails()) {
@@ -215,40 +206,26 @@ class AttendanceController extends Controller
         }
 
         DB::transaction(function () use ($attendance, $request) {
-            // 勤怠情報の更新
-            $attendance->update([
-                'clock_in' => $request->clock_in,
-                'clock_out' => $request->clock_out,
-                'note' => $request->note,
-                'status' => 'pending',
-            ]);
+            Log::info('Inside transaction start');
 
-            // 休憩時間の更新
-            $attendance->breaks()->delete();
-            foreach ($request->input('breaks', []) as $break) {
-                if (!empty($break['break_in']) || !empty($break['break_out'])) {
-                    $attendance->breaks()->create([
-                        'break_in' => Carbon::parse($attendance->date . ' ' . $break['break_in']),
-                        'break_out' => Carbon::parse($attendance->date . ' ' . $break['break_out']),
-                    ]);
-                }
-            }
+            $attendance->update(['status' => 'pending']);
+            Log::info('Attendance status updated');
 
-            // 👇 修正申請テーブルに登録
             StampCorrectionRequest::create([
                 'user_id' => auth()->id(),
                 'date' => $attendance->date,
                 'clock_in' => $request->clock_in,
                 'clock_out' => $request->clock_out,
-                'break_in' => $request->breaks[0]['break_in'] ?? null, // 任意で
+                'break_in' => $request->breaks[0]['break_in'] ?? null,
                 'break_out' => $request->breaks[0]['break_out'] ?? null,
                 'note' => $request->note,
                 'status' => 'pending',
             ]);
         });
 
-        return redirect()->route('attendance.show', $attendance->id)->with('success', '修正申請が完了しました。');
+        return redirect()->route('attendance.list')->with('success', '修正申請を送信しました。');
     }
+
 
     // 管理者による直接修正
     public function adminUpdate(Request $request, $id)

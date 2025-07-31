@@ -3,16 +3,15 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AttendanceController;
-// use App\Http\Controllers\StampCorrectionRequestController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
-use App\Http\Controllers\Admin\StampCorrectionRequestController;
+use App\Http\Controllers\Admin\StampCorrectionRequestController as AdminStampController;
+use App\Http\Controllers\User\StampCorrectionRequestController as UserStampController;
 
 // ===== ログイン後の初期遷移先 =====
 Route::get('/', function () {
     return redirect()->route('login');
 });
-
 
 // ==========================
 // 一般ユーザー用ルート
@@ -31,15 +30,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance/{id}/pending', [AttendanceController::class, 'showPending'])->name('attendance.pending');
     Route::put('/attendance/{id}', [AttendanceController::class, 'requestUpdate'])->name('attendance.update');
 
-    // 修正申請：一般ユーザー用（自身のみ対象）
-    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])
-        ->name('stamp_correction_request.list');
-    Route::get('/stamp_correction_request/{attendance_correct_request}', [StampCorrectionRequestController::class, 'show'])
-        ->name('stamp_correction_request.show');
-    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [StampCorrectionRequestController::class, 'approve'])
-        ->name('stamp_correction_request.approve');
+    // 修正申請：一般ユーザー用
+    Route::prefix('user')->name('user.')->group(function () {
+        Route::get('/stamp_correction_request/list', [UserStampController::class, 'index'])->name('stamp_correction_request.list');
+        Route::get('/stamp_correction_request/{attendance_correct_request}', [UserStampController::class, 'show'])->name('stamp_correction_request.show');
+        Route::post('/stamp_correction_request/{attendance}', [UserStampController::class, 'store'])->name('stamp_correction_request.store');
+    });
 });
-
 
 // ==========================
 // 管理者ログイン／ログアウト
@@ -55,36 +52,22 @@ Route::post('/admin/logout', function () {
     return redirect('/admin/login');
 })->name('admin.logout');
 
-
 // ==========================
-// 管理者用ルート（URLに /admin を含まない）
+// 管理者用ルート（URLに /admin を含む）
 // ==========================
-Route::middleware(['auth', 'admin'])->group(function () {
-    // 管理者用：修正申請一覧・詳細・承認（全ユーザー対象）
-    Route::get('/stamp_correction_request/list', [StampCorrectionRequestController::class, 'index'])
-        ->name('admin.stamp_correction_request.list');
-    Route::get('/stamp_correction_request/{attendance_correct_request}', [StampCorrectionRequestController::class, 'show'])
-        ->name('admin.stamp_correction_request.show');
-    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [StampCorrectionRequestController::class, 'approve'])
-        ->name('admin.stamp_correction_request.approve');
-});
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+    // 修正申請（管理者）
+    Route::get('/stamp_correction_request/list', [AdminStampController::class, 'index'])->name('stamp_correction_request.list');
+    Route::get('/stamp_correction_request/{attendance_correct_request}', [AdminStampController::class, 'show'])->name('stamp_correction_request.show');
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [AdminStampController::class, 'approve'])->name('stamp_correction_request.approve');
 
-
-// ==========================
-
-
-
-
-// 管理者専用（/admin付きパス）勤怠管理・スタッフ管理
-// ==========================
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    // 勤怠管理（管理者が見る側）
-    Route::get('/attendance/list', [AdminAttendanceController::class, 'list'])->name('admin.attendance.list');
-    Route::get('/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('admin.attendance.show');
-    Route::put('/attendance/{id}/update', [AdminAttendanceController::class, 'adminUpdate'])->name('admin.attendance.update');
+    // 勤怠管理（管理者）
+    Route::get('/attendance/list', [AdminAttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('attendance.show');
+    Route::put('/attendance/{id}/update', [AdminAttendanceController::class, 'adminUpdate'])->name('attendance.update');
 
     // スタッフ管理
-    Route::get('/staff/list', [AdminAttendanceController::class, 'staffList'])->name('admin.staff.list');
-    Route::get('/attendance/staff/{id}', [AdminAttendanceController::class, 'showStaffAttendance'])->name('admin.attendance.staff');
-    Route::get('/attendance/staff/{id}/csv', [AdminAttendanceController::class, 'exportStaffAttendanceCsv'])->name('admin.attendance.staff.csv');
+    Route::get('/staff/list', [AdminAttendanceController::class, 'staffList'])->name('staff.list');
+    Route::get('/attendance/staff/{id}', [AdminAttendanceController::class, 'showStaffAttendance'])->name('attendance.staff');
+    Route::get('/attendance/staff/{id}/csv', [AdminAttendanceController::class, 'exportStaffAttendanceCsv'])->name('attendance.staff.csv');
 });
