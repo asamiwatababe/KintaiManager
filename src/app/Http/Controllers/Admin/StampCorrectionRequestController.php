@@ -21,12 +21,16 @@ class StampCorrectionRequestController extends Controller
     // 管理者用の申請詳細画面
     public function show(StampCorrectionRequest $attendance_correct_request)
     {
+        // リレーションを明示的にロード
+        $attendance_correct_request->load(['user', 'attendance']);
+
         return view('admin.stamp_correction_request.show', [
             'request' => $attendance_correct_request,
             'user' => $attendance_correct_request->user,
             'attendance' => $attendance_correct_request->attendance,
         ]);
     }
+
 
     // 申請の承認処理
     public function approve(StampCorrectionRequest $attendance_correct_request)
