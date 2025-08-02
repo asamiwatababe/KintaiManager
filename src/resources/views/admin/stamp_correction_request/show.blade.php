@@ -12,7 +12,8 @@
         </tr>
         <tr>
             <th>日付</th>
-            <td>{{ \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') }}</td>
+            <td>{{ optional($attendance->date) ? \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') : '未登録' }}</td>
+
         </tr>
         <tr>
             <th>出勤・退勤</th>

@@ -19,7 +19,7 @@
         <tr>
             <th>状態</th>
             <th>名前</th>
-            <p>対象日: {{ $attendance?->date ?? '未登録' }}</p>
+            <th>対象日時</th>
             <th>申請理由</th>
             <th>申請日時</th>
             <th>詳細</th>
@@ -28,7 +28,8 @@
     <tbody>
         @foreach ($pending as $request)
         <tr>
-            <td>承認待ち</td>
+            <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
+
             <td>{{ $request->user->name }}</td>
             <td>{{ $request->target_date }}</td>
             <td>{{ $request->reason }}</td>
@@ -44,7 +45,7 @@
         <tr>
             <th>状態</th>
             <th>名前</th>
-            <p>対象日: {{ $attendance?->date ?? '未登録' }}</p>
+            <th>対象日時</th>
             <th>申請理由</th>
             <th>申請日時</th>
             <th>詳細</th>
@@ -53,7 +54,8 @@
     <tbody>
         @foreach ($approved as $request)
         <tr>
-            <td>承認済み</td>
+            <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
+
             <td>{{ $request->user->name }}</td>
             <td>{{ $request->target_date }}</td>
             <td>{{ $request->reason }}</td>

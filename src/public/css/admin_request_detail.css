@@ -1,0 +1,59 @@
+.detail-card {
+    background-color: #fff;
+    padding: 40px;
+    max-width: 800px;
+    margin: 40px auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 5px solid #000;
+    padding-left: 10px;
+    margin-bottom: 30px;
+}
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+}
+
+.detail-table th,
+.detail-table td {
+    border: 1px solid #ddd;
+    padding: 16px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.detail-table th {
+    background-color: #f9f9f9;
+    width: 30%;
+}
+
+.approve-form {
+    text-align: center;
+}
+
+.submit-btn {
+    background-color: #000;
+    color: #fff;
+    padding: 12px 40px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background-color: #444;
+}
+
+.already-approved {
+    color: #555;
+    margin-top: 10px;
+    font-weight: bold;
+}
