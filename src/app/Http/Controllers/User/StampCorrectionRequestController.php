@@ -16,4 +16,16 @@ class StampCorrectionRequestController extends Controller
 
         return view('user.request.index', compact('pending', 'approved'));
     }
+
+    public function show($id)
+    {
+        $request = StampCorrectionRequest::with(['user', 'attendance.breaks'])->findOrFail($id);
+        $user = $request->user;
+
+        return view('user.request.detail', [
+            'request' => $request,
+            'user' => $user,
+            'attendance' => $request->attendance,
+        ]);
+    }
 }

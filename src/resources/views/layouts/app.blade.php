@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>@yield('title', '勤怠管理システム')</title>
     <link rel="stylesheet" href="{{ asset('css/header.css') }}">
+    @yield('css')
 </head>
 
 <body>

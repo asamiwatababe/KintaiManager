@@ -98,7 +98,7 @@ class AdminAttendanceController extends Controller
 
         $attendances = Attendance::with('breaks')
             ->where('user_id', $id)
-            ->where('date', 'like', $month . '%')
+            // ->where('date', 'like', $month . '%')
             ->orderBy('date')
             ->get();
 

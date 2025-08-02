@@ -1,5 +1,5 @@
 @extends('layouts.app')
-<link rel="stylesheet" href="{{ asset('css/pending_detail.blade.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pending_detail.css') }}">
 <link rel="stylesheet" href="{{ asset('css/list.css') }}">
 @section('content')
 
