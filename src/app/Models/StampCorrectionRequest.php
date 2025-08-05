@@ -19,6 +19,7 @@ class StampCorrectionRequest extends Model
         'note',
         'status',
         'admin_comment',
+        'attendance_id',
     ];
 
 

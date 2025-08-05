@@ -30,14 +30,17 @@
         <tr>
             <td>承認待ち</td>
             <td>{{ $request->user->name }}</td>
-            <td>{{ $request->target_date }}</td>
-            <td>{{ $request->reason }}</td>
+            <td>{{ $request->date }}</td>
+            <td>{{ $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td><a href="{{ route('user.stamp_correction_request.show', $request->id) }}">詳細</a></td>
+            <td>
+                <a href="{{ route('user.stamp_correction_request.show', $request->id) }}">詳細</a>
+            </td>
         </tr>
         @endforeach
     </tbody>
 </table>
+
 
 <table class="request-table" id="approved-table" style="display: none;">
     <thead>
@@ -51,16 +54,17 @@
         </tr>
     </thead>
     <tbody>
+        {{-- 承認済み一覧 --}}
         @foreach ($approved as $request)
         <tr>
             <td>承認済み</td>
             <td>{{ $request->user->name }}</td>
-            <td>{{ $request->target_date }}</td>
-            <td>{{ $request->reason }}</td>
+            <td>{{ $request->date }}</td>
+            <td>{{ $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td><a href="{{ route('user.stamp_correction_request.show', $request->id) }}">詳細</a></td>
         </tr>
         @endforeach
+
     </tbody>
 </table>
 

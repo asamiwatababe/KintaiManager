@@ -1,9 +1,9 @@
-@extends('layouts.app') {{-- 一般ユーザー用レイアウト --}}
+<!-- @extends('layouts.app')
 
 @section('title', '修正申請 詳細')
 
 @section('content')
-<h2 class="title">▌修正申請 詳細</h2>
+<h2 class="title">申請 詳細</h2>
 
 <table class="detail-table">
     <tr>
@@ -29,6 +29,6 @@
 </table>
 
 <div class="button-area">
-    <a href="{{ route('stamp_correction_request.list') }}" class="back-btn">一覧へ戻る</a>
+    <a href="{{ route('user.stamp_correction_request.list') }}" class="back-btn">一覧へ戻る</a>
 </div>
-@endsection
+@endsection -->

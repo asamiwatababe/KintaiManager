@@ -50,11 +50,6 @@
         </tr>
     </table>
 
-    <!-- <form method="POST" action="{{ route('admin.stamp_correction_request.approve', $request->id) }}" class="approve-form">
-        @csrf
-        <button type="submit" class="submit-btn">承認</button>
-    </form> -->
-
     <form method="POST" action="{{ route('admin.stamp_correction_request.approve', $request->id) }}" class="approve-form">
         @if ($request->status === 'pending')
         @csrf
