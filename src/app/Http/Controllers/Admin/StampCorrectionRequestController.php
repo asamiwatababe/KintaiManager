@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\StampCorrectionRequest;
-use App\Models\Attendance;
 
 class StampCorrectionRequestController extends Controller
 {
@@ -31,7 +29,6 @@ class StampCorrectionRequestController extends Controller
         ]);
     }
 
-
     // 申請の承認処理
     public function approve(StampCorrectionRequest $attendance_correct_request)
     {
@@ -56,10 +53,5 @@ class StampCorrectionRequestController extends Controller
 
         return redirect()
             ->route('admin.stamp_correction_request.list');
-            
     }
-
-
-
-    // 管理者は申請を登録しないので store は不要
 }

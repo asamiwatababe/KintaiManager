@@ -6,14 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AdminLoginRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     public function rules()
@@ -28,6 +23,7 @@ class AdminLoginRequest extends FormRequest
     {
         return [
             'email.required' => 'メールアドレスを入力してください',
+            'email.email' => '有効なメールアドレス形式で入力してください',
             'password.required' => 'パスワードを入力してください',
         ];
     }

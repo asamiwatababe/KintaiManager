@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\AdminLoginRequest;
 
 class AdminLoginController extends Controller
 {
@@ -13,21 +13,18 @@ class AdminLoginController extends Controller
         return view('admin.auth.login');
     }
 
-    public function login(Request $request)
+    public function login(AdminLoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
 
+        // 認証処理（is_admin チェックは削除）
         if (Auth::attempt($credentials)) {
-            if (!Auth::user()->is_admin) {
-                Auth::logout(); // 一般ユーザーは即ログアウト
-                return back()->withErrors(['email' => '管理者アカウントではありません']);
-            }
-
             return redirect()->intended('/admin/attendance/list');
         }
 
+        // 認証失敗時のメッセージ（常にこれだけ）
         return back()->withErrors([
-            'email' => 'ログイン情報が登録されていません',
+            'auth' => 'ログイン情報が登録されていません',
         ])->withInput();
     }
 }

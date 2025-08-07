@@ -34,11 +34,12 @@
                 @enderror
             </div>
 
-            @if(session('status'))
-            <p class="error">{{ session('status') }}</p>
-            @endif
+            @error('auth')
+            <p class="error">{{ $message }}</p>
+            @enderror
 
-            <button type="submit">ログインする</button>
+
+            <button type="submit">ログイン</button>
         </form>
     </main>
 </body>
