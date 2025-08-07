@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 // use App\Http\Requests\StampCorrectionRequest;
 use App\Models\StampCorrectionRequest;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\AttendanceCorrectionRequest;
+
 
 
 
@@ -188,22 +190,11 @@ class AttendanceController extends Controller
         return view('attendance.detail', compact('attendance', 'breaks', 'user'));
     }
 
-    public function requestUpdate(Request $request, $id)
+
+    public function requestUpdate(AttendanceCorrectionRequest $request, $id)
     {
         Log::info('requestUpdate called', ['id' => $id]);
         $attendance = Attendance::findOrFail($id);
-
-        $validator = Validator::make($request->all(), [
-            'clock_in' => 'required|date_format:H:i',
-            'clock_out' => 'required|date_format:H:i|after:clock_in',
-            'breaks.*.break_in' => 'nullable|date_format:H:i',
-            'breaks.*.break_out' => 'nullable|date_format:H:i|after:breaks.*.break_in',
-            'note' => 'required|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
 
         DB::transaction(function () use ($attendance, $request) {
             Log::info('Inside transaction start');
@@ -216,8 +207,8 @@ class AttendanceController extends Controller
                 'date' => $attendance->date,
                 'clock_in' => $request->clock_in,
                 'clock_out' => $request->clock_out,
-                'break_in' => $request->breaks[0]['break_in'] ?? null,
-                'break_out' => $request->breaks[0]['break_out'] ?? null,
+                'break_in' => $request->break_start ?? null,
+                'break_out' => $request->break_end ?? null,
                 'note' => $request->note,
                 'status' => 'pending',
             ]);
