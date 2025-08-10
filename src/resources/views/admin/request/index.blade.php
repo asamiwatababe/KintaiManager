@@ -29,12 +29,13 @@
         @foreach ($pending as $request)
         <tr>
             <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
-
             <td>{{ $request->user->name }}</td>
-            <td>{{ $request->target_date }}</td>
-            <td>{{ $request->reason }}</td>
+            <td>{{ $request->target_date ?? $request->date }}</td>
+            <td>{{ $request->reason ?? $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td><a href="{{ route('admin.stamp_correction_request.show', $request->id) }}">詳細</a></td>
+            <td>
+                <a href="{{ route('stamp_correction_request.show', $request->id) }}">詳細</a>
+            </td>
         </tr>
         @endforeach
     </tbody>
@@ -55,12 +56,13 @@
         @foreach ($approved as $request)
         <tr>
             <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
-
             <td>{{ $request->user->name }}</td>
-            <td>{{ $request->target_date }}</td>
-            <td>{{ $request->reason }}</td>
+            <td>{{ $request->target_date ?? $request->date }}</td>
+            <td>{{ $request->reason ?? $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td><a href="{{ route('admin.stamp_correction_request.show', $request->id) }}">詳細</a></td>
+            <td>
+                <a href="{{ route('stamp_correction_request.show', $request->id) }}">詳細</a>
+            </td>
         </tr>
         @endforeach
     </tbody>
@@ -68,16 +70,9 @@
 
 <script>
     function switchTab(status) {
-        // タブ切り替え
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelector(`.tab[onclick*="${status}"]`).classList.add('active');
-
-        // テーブル表示切り替え
-        document.querySelectorAll('.request-table').forEach(table => {
-            table.style.display = 'none';
-        });
+        document.querySelectorAll('.request-table').forEach(tb => tb.style.display = 'none');
         document.getElementById(`${status}-table`).style.display = 'table';
     }
 </script>

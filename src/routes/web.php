@@ -24,16 +24,32 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/attendance/{id}', [AttendanceController::class, 'requestUpdate'])->whereNumber('id')->name('attendance.update');
 });
 
-// ===== 申請一覧（共通パスに統一）=====
+// ===== 申請一覧（共通パス）=====
 Route::get('/stamp_correction_request/list', function () {
     $user = Auth::user();
     if (!$user) return redirect()->route('login');
+
     return $user->is_admin
         ? app(AdminStampController::class)->index()
         : app(UserStampController::class)->index();
 })->middleware('auth')->name('stamp_correction_request.list');
 
-// ===== 申請承認（管理者のみ）=====
+// ===== 申請「詳細」（共通パス /stamp_correction_request/{id}）=====
+// 管理者なら管理者の承認詳細ビューへ、一般なら勤怠詳細（pending/通常）へ振り分け
+Route::get('/stamp_correction_request/{attendance_correct_request}', function (int $id) {
+    $user = Auth::user();
+    if (!$user) return redirect()->route('login');
+
+    if ($user->is_admin) {
+        $model = \App\Models\StampCorrectionRequest::findOrFail($id);
+        return app(\App\Http\Controllers\Admin\StampCorrectionRequestController::class)->show($model);
+    }
+
+    // 一般ユーザーは勤怠詳細へ誘導（pending/approvedで切替）
+    return app(\App\Http\Controllers\User\StampCorrectionRequestController::class)->redirectToAttendance($id);
+})->whereNumber('attendance_correct_request')->middleware('auth')->name('stamp_correction_request.show');
+
+// ===== 申請承認（管理者のみ／共通パス）=====
 Route::post('/stamp_correction_request/approve/{attendance_correct_request}', [AdminStampController::class, 'approve'])
     ->whereNumber('attendance_correct_request')
     ->middleware(['auth', 'is_admin'])
@@ -47,7 +63,8 @@ Route::post('/admin/logout', function () {
     return redirect('/admin/login');
 })->name('admin.logout');
 
-// ===== 管理者 =====
+// ===== 管理者（/admin 配下）=====
+// ※ 既存互換のために残すが、リンクは使わない（詳細リンクは上の共通パスへ）
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/stamp_correction_request/{attendance_correct_request}', [AdminStampController::class, 'show'])
         ->whereNumber('attendance_correct_request')->name('stamp_correction_request.show');
@@ -58,12 +75,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     Route::get('/staff/list', [AdminAttendanceController::class, 'staffList'])->name('staff.list');
     Route::get('/attendance/staff/{id}', [AdminAttendanceController::class, 'showStaffAttendance'])->whereNumber('id')->name('attendance.staff');
-    Route::get('/attendance/staff/{id}/csv', [AdminAttendanceController::class, 'exportStaffCsv'])->whereNumber('id')->name('attendance.staff.csv');
+    Route::get('/attendance/staff/{id}/csv', [AdminAttendanceController::class, 'exportStaffAttendanceCsv'])->whereNumber('id')->name('attendance.staff.csv');
 });
 
-// ===== 旧URLの完全廃止（/user 側は登録だけ残す）=====
+// ===== 一般ユーザー（申請登録のみ /user）=====
 Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::post('/stamp_correction_request/{attendance}', [UserStampController::class, 'store'])
         ->whereNumber('attendance')->name('stamp_correction_request.store');
-    // ※ /user/stamp_correction_request/list のGETルートは作らない（廃止）
 });
