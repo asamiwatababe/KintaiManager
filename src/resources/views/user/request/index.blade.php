@@ -34,13 +34,17 @@
             <td>{{ $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
             <td>
-                <a href="{{ route('user.stamp_correction_request.show', $request->id) }}">詳細</a>
+                @if ($request->attendance_id)
+                    {{-- 勤怠一覧の承認待ち詳細と同じ遷移先 --}}
+                    <a href="{{ route('attendance.pending', $request->attendance_id) }}">詳細</a>
+                @else
+                    -
+                @endif
             </td>
         </tr>
         @endforeach
     </tbody>
 </table>
-
 
 <table class="request-table" id="approved-table" style="display: none;">
     <thead>
@@ -54,7 +58,6 @@
         </tr>
     </thead>
     <tbody>
-        {{-- 承認済み一覧 --}}
         @foreach ($approved as $request)
         <tr>
             <td>承認済み</td>
@@ -62,9 +65,16 @@
             <td>{{ $request->date }}</td>
             <td>{{ $request->note }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
+            <td>
+                @if ($request->attendance_id)
+                    {{-- 勤怠一覧の通常詳細と同じ遷移先 --}}
+                    <a href="{{ route('attendance.show', $request->attendance_id) }}">詳細</a>
+                @else
+                    -
+                @endif
+            </td>
         </tr>
         @endforeach
-
     </tbody>
 </table>
 

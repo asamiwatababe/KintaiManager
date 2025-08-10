@@ -22,7 +22,6 @@ class AttendanceCorrectionRequest extends FormRequest
         ];
     }
 
-
     public function messages()
     {
         return [

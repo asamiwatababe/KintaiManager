@@ -9,23 +9,6 @@
 @section('content')
 <div class="container">
     <h2 class="title">勤怠詳細</h2>
-
-    <!-- {{-- 成功メッセージ --}}
-    @if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    {{-- 全体的なバリデーションエラー表示（リスト形式） --}}
-    @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif -->
-
     <form method="POST" action="{{ route('attendance.update', $attendance->id) }}">
         @csrf
         @method('PUT')
