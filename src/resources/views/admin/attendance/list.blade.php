@@ -36,7 +36,7 @@
                 <td>{{ $attendance->break_duration ?? '-' }}</td>
                 <td>{{ $attendance->work_duration ?? '-' }}</td>
                 <td>
-                    <a href="{{ route('admin.attendance.show', $attendance->id) }}">詳細</a>
+                    <a href="{{ route('attendance.show', $attendance->id) }}">詳細</a>
                 </td>
             </tr>
             @endforeach

@@ -54,7 +54,7 @@
                 -
                 @endif
             </td>
-            <td><a href="{{ route('admin.attendance.show', $attendance->id) }}">詳細</a></td>
+            <td><a href="{{ route('attendance.show', $attendance->id) }}">詳細</a></td>
         </tr>
         @endforeach
     </tbody>

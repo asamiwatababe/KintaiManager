@@ -181,11 +181,28 @@ class AttendanceController extends Controller
     }
 
     // 管理者か一般ユーザーかでビューを分ける処理
+    // public function showDetail($id)
+    // {
+    //     $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
+    //     $breaks = $attendance->breaks->sortBy('break_in')->values();
+    //     $user = $attendance->user;
+
+    //     return view('attendance.detail', compact('attendance', 'breaks', 'user'));
+    // }
+
     public function showDetail($id)
     {
         $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
+
+        // 管理者なら管理者用の詳細ビューへ
+        if (Auth::user()->is_admin ?? false) {
+            // 既存の admin ビューは $attendance を渡せば使える想定
+            return view('admin.attendance.admindetail', compact('attendance'));
+        }
+
+        // 一般ユーザー用ビュー
         $breaks = $attendance->breaks->sortBy('break_in')->values();
-        $user = $attendance->user;
+        $user   = $attendance->user;
 
         return view('attendance.detail', compact('attendance', 'breaks', 'user'));
     }

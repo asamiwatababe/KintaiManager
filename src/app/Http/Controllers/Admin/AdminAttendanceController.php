@@ -59,7 +59,7 @@ use App\Models\Attendance;
 use Carbon\Carbon;
 use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\Response;
+use App\Http\Requests\AdminAttendanceUpdateRequest;
 
 class AdminAttendanceController extends Controller
 {
@@ -168,17 +168,21 @@ class AdminAttendanceController extends Controller
     }
 
     // 勤怠詳細画面の修正ボタンをクリック
-    public function adminUpdate(Request $request, $id)
+    public function adminUpdate(AdminAttendanceUpdateRequest $request, $id)
     {
         $attendance = Attendance::findOrFail($id);
+
+        // バリデーション済み値
+        $data = $request->validated();
+
         $attendance->update([
-            'clock_in' => $request->input('clock_in'),
-            'clock_out' => $request->input('clock_out'),
-            'break_start' => $request->input('break_start'),
-            'break_end' => $request->input('break_end'),
-            'memo' => $request->input('memo'),
+            'clock_in'    => $data['clock_in'],
+            'clock_out'   => $data['clock_out'],
+            'break_start' => $data['break_start'] ?? null,
+            'break_end'   => $data['break_end'] ?? null,
+            'memo'        => $data['memo'],
         ]);
 
-        return redirect()->back()->with('success', '勤怠情報を更新しました。');
+        return redirect()->back()->with('success', '勤怠情報を修正しました。');
     }
 }
