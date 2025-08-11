@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="detail-card">
-    <h2 class="title">▌勤怠詳細</h2>
+    <h2 class="title">勤怠詳細</h2>
     <table class="detail-table">
         <tr>
             <th>名前</th>

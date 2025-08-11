@@ -125,27 +125,31 @@ class AdminAttendanceController extends Controller
     public function adminUpdate(AdminAttendanceUpdateRequest $request, $id)
     {
         $attendance = Attendance::with('breaks')->findOrFail($id);
-        $data = $request->validated(); // clock_in, clock_out, break_start, break_end, memo
+        $data = $request->validated();
 
-        // attendances を更新（備考は note カラム）
+        // 1) 勤怠本体（備考は note に保存）
         $attendance->update([
             'clock_in'  => $data['clock_in'],
             'clock_out' => $data['clock_out'],
             'note'      => $data['memo'],
-            'status'    => 'approved', // 直接修正は承認済み扱いに寄せる場合
+            'status'    => 'approved', // 直接修正は承認済み扱いにする場合
         ]);
 
-        // 休憩を break_times で更新
+        // 2) 休憩2本を break_times に保存（既存は全削除 → 入れ直し）
         $attendance->breaks()->delete();
 
-        $breakStart = $data['break_start'] ?? null; // H:i or null
-        $breakEnd   = $data['break_end'] ?? null;   // H:i or null
+        $pairs = [
+            ['start' => $data['break_1_start'] ?? null, 'end' => $data['break_1_end'] ?? null],
+            ['start' => $data['break_2_start'] ?? null, 'end' => $data['break_2_end'] ?? null],
+        ];
 
-        if ($breakStart || $breakEnd) {
-            $attendance->breaks()->create([
-                'break_in'  => $breakStart ? Carbon::parse($attendance->date . ' ' . $breakStart) : null,
-                'break_out' => $breakEnd   ? Carbon::parse($attendance->date . ' ' . $breakEnd)   : null,
-            ]);
+        foreach ($pairs as $p) {
+            if ($p['start'] || $p['end']) {
+                $attendance->breaks()->create([
+                    'break_in'  => $p['start'] ? Carbon::parse($attendance->date . ' ' . $p['start']) : null,
+                    'break_out' => $p['end']   ? Carbon::parse($attendance->date . ' ' . $p['end'])   : null,
+                ]);
+            }
         }
 
         return redirect()->route('attendance.show', $attendance->id)

@@ -10,28 +10,32 @@ class AdminAttendanceUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // ルートで is_admin ミドルウェア済みなので true でOK
-        return true;
+        return true; // is_admin ミドルウェアで守られている想定
     }
 
     public function rules(): array
     {
         return [
-            'clock_in'   => ['required', 'date_format:H:i'],
-            'clock_out'  => ['required', 'date_format:H:i', 'after:clock_in'],
-            'break_start' => ['nullable', 'date_format:H:i'],
-            'break_end'  => ['nullable', 'date_format:H:i', 'after:break_start'],
-            'memo'       => ['required', 'string', 'max:255'],
+            'clock_in'       => ['required', 'date_format:H:i'],
+            'clock_out'      => ['required', 'date_format:H:i', 'after:clock_in'],
+
+            'break_1_start'  => ['nullable', 'date_format:H:i'],
+            'break_1_end'    => ['nullable', 'date_format:H:i', 'after:break_1_start'],
+
+            'break_2_start'  => ['nullable', 'date_format:H:i'],
+            'break_2_end'    => ['nullable', 'date_format:H:i', 'after:break_2_start'],
+
+            'memo'           => ['required', 'string', 'max:255'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            // 要件の固定文言（管理者は「です。」）
-            'clock_out.after'   => '出勤時間もしくは退勤時間が不適切な値です。',
-            'break_end.after'   => '休憩時間が勤務時間外です。',
-            'memo.required'     => '備考を記入してください。',
+            'clock_out.after'     => '出勤時間もしくは退勤時間が不適切な値です。',
+            'break_1_end.after'   => '休憩時間が勤務時間外です。',
+            'break_2_end.after'   => '休憩時間が勤務時間外です。',
+            'memo.required'       => '備考を記入してください。',
         ];
     }
 
@@ -40,25 +44,27 @@ class AdminAttendanceUpdateRequest extends FormRequest
         $validator->after(function (Validator $v) {
             $ci = $this->input('clock_in');
             $co = $this->input('clock_out');
-            $bs = $this->input('break_start');
-            $be = $this->input('break_end');
-
             if (!$ci || !$co) return;
 
             $clockIn  = Carbon::createFromFormat('H:i', $ci);
             $clockOut = Carbon::createFromFormat('H:i', $co);
 
-            // 休憩が勤務時間外に出ていないか（どちらか片方だけ入っててもチェック）
-            if ($bs) {
-                $breakStart = Carbon::createFromFormat('H:i', $bs);
-                if ($breakStart->lt($clockIn) || $breakStart->gt($clockOut)) {
-                    $v->errors()->add('break_start', '休憩時間が勤務時間外です。');
+            // 各休憩が勤務時間内に収まっているかチェック
+            foreach ([1, 2] as $i) {
+                $bs = $this->input("break_{$i}_start");
+                $be = $this->input("break_{$i}_end");
+
+                if ($bs) {
+                    $bsC = Carbon::createFromFormat('H:i', $bs);
+                    if ($bsC->lt($clockIn) || $bsC->gt($clockOut)) {
+                        $v->errors()->add("break_{$i}_start", '休憩時間が勤務時間外です。');
+                    }
                 }
-            }
-            if ($be) {
-                $breakEnd = Carbon::createFromFormat('H:i', $be);
-                if ($breakEnd->lt($clockIn) || $breakEnd->gt($clockOut)) {
-                    $v->errors()->add('break_end', '休憩時間が勤務時間外です。');
+                if ($be) {
+                    $beC = Carbon::createFromFormat('H:i', $be);
+                    if ($beC->lt($clockIn) || $beC->gt($clockOut)) {
+                        $v->errors()->add("break_{$i}_end", '休憩時間が勤務時間外です。');
+                    }
                 }
             }
         });
