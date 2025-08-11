@@ -1,65 +1,14 @@
 <?php
 
-// namespace App\Http\Controllers\Admin;
-
-// use App\Http\Controllers\Controller;
-// use Illuminate\Http\Request;
-// use App\Models\Attendance;
-// use Carbon\Carbon;
-// // use App\Http\Controllers\Admin\AdminAttendanceController;
-
-// class AdminAttendanceController extends Controller
-// {
-//     public function list(Request $request)
-//     {
-//         $date = $request->input('date') ?? now()->toDateString();
-
-//         // 対象日の勤怠を全ユーザー分取得（user・breaksも一緒に）
-//         $attendances = Attendance::with(['user', 'breaks'])
-//             ->where('date', $date)
-//             ->get();
-
-//         foreach ($attendances as $attendance) {
-//             if ($attendance->clock_in && $attendance->clock_out) {
-//                 $clockIn = Carbon::parse($attendance->clock_in);
-//                 $clockOut = Carbon::parse($attendance->clock_out);
-//                 $workMinutes = $clockOut->diffInMinutes($clockIn);
-
-//                 $breakMinutes = 0;
-//                 foreach ($attendance->breaks as $break) {
-//                     if ($break->break_in && $break->break_out) {
-//                         $in = Carbon::parse($break->break_in);
-//                         $out = Carbon::parse($break->break_out);
-//                         $breakMinutes += $out->diffInMinutes($in);
-//                     }
-//                 }
-
-//                 $attendance->break_duration = sprintf('%d:%02d', floor($breakMinutes / 60), $breakMinutes % 60);
-//                 $attendance->work_duration = sprintf('%d:%02d', floor(($workMinutes - $breakMinutes) / 60), ($workMinutes - $breakMinutes) % 60);
-//             } else {
-//                 $attendance->break_duration = '';
-//                 $attendance->work_duration = '';
-//             }
-//         }
-
-//         return view('admin.attendance.list', [
-//             'attendances' => $attendances,
-//             'currentDate' => $date,
-//             'previousDate' => Carbon::parse($date)->subDay()->toDateString(),
-//             'nextDate' => Carbon::parse($date)->addDay()->toDateString(),
-//         ]);
-//     }
-// }
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Attendance;
-use Carbon\Carbon;
-use App\Models\User;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Requests\AdminAttendanceUpdateRequest;
+use App\Models\Attendance;
+use App\Models\User;
+use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminAttendanceController extends Controller
 {
@@ -72,10 +21,10 @@ class AdminAttendanceController extends Controller
             ->get();
 
         return view('admin.attendance.list', [
-            'attendances' => $attendances,
-            'currentDate' => $date,
+            'attendances'  => $attendances,
+            'currentDate'  => $date,
             'previousDate' => Carbon::parse($date)->subDay()->toDateString(),
-            'nextDate' => Carbon::parse($date)->addDay()->toDateString(),
+            'nextDate'     => Carbon::parse($date)->addDay()->toDateString(),
         ]);
     }
 
@@ -93,27 +42,26 @@ class AdminAttendanceController extends Controller
 
     public function showStaffAttendance($id, Request $request)
     {
-        $user = User::findOrFail($id);
+        $user  = User::findOrFail($id);
         $month = $request->input('month') ?? now()->format('Y-m');
 
         $attendances = Attendance::with('breaks')
             ->where('user_id', $id)
-            // ->where('date', 'like', $month . '%')
             ->orderBy('date')
             ->get();
 
         return view('admin.attendance.staff_detail', [
-            'user' => $user,
-            'attendances' => $attendances,
-            'currentMonth' => $month
+            'user'         => $user,
+            'attendances'  => $attendances,
+            'currentMonth' => $month,
         ]);
     }
 
-    // csv 
-    public function exportStaffCsv($id)
+    // CSV（ルート名に合わせて exportStaffAttendanceCsv に統一）
+    public function exportStaffAttendanceCsv($id)
     {
-        $user = \App\Models\User::findOrFail($id);
-        $attendances = \App\Models\Attendance::with('breaks')
+        $user = User::findOrFail($id);
+        $attendances = Attendance::with('breaks')
             ->where('user_id', $id)
             ->orderBy('date')
             ->get();
@@ -125,14 +73,14 @@ class AdminAttendanceController extends Controller
             fputcsv($handle, ['氏名', '日付', '出勤', '退勤', '休憩合計', '勤務時間']);
 
             foreach ($attendances as $attendance) {
-                $clockIn = $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '';
-                $clockOut = $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '';
+                $clockIn  = $attendance->clock_in  ? Carbon::parse($attendance->clock_in)->format('H:i')  : '';
+                $clockOut = $attendance->clock_out ? Carbon::parse($attendance->clock_out)->format('H:i') : '';
 
                 $totalBreak = 0;
                 foreach ($attendance->breaks as $break) {
                     if ($break->break_in && $break->break_out) {
-                        $in = \Carbon\Carbon::parse($break->break_in);
-                        $out = \Carbon\Carbon::parse($break->break_out);
+                        $in  = Carbon::parse($break->break_in);
+                        $out = Carbon::parse($break->break_out);
                         $totalBreak += $out->diffInMinutes($in);
                     }
                 }
@@ -141,8 +89,8 @@ class AdminAttendanceController extends Controller
 
                 $workTime = '-';
                 if ($attendance->clock_in && $attendance->clock_out) {
-                    $start = \Carbon\Carbon::parse($attendance->clock_in);
-                    $end = \Carbon\Carbon::parse($attendance->clock_out);
+                    $start   = Carbon::parse($attendance->clock_in);
+                    $end     = Carbon::parse($attendance->clock_out);
                     $minutes = $end->diffInMinutes($start) - $totalBreak;
                     $workTime = floor($minutes / 60) . ':' . sprintf('%02d', $minutes % 60);
                 }
@@ -167,22 +115,40 @@ class AdminAttendanceController extends Controller
         return $response;
     }
 
-    // 勤怠詳細画面の修正ボタンをクリック
+    /**
+     * 管理者：勤怠詳細の修正保存
+     * - 出勤/退勤/備考は attendances へ
+     * - 休憩は break_times（relations: breaks）へ
+     *   既存の休憩は一旦削除して、フォームの1本分を入れ直す
+     * - バリデーションは AdminAttendanceUpdateRequest で実施
+     */
     public function adminUpdate(AdminAttendanceUpdateRequest $request, $id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::with('breaks')->findOrFail($id);
+        $data = $request->validated(); // clock_in, clock_out, break_start, break_end, memo
 
-        // バリデーション済み値
-        $data = $request->validated();
-
+        // attendances を更新（備考は note カラム）
         $attendance->update([
-            'clock_in'    => $data['clock_in'],
-            'clock_out'   => $data['clock_out'],
-            'break_start' => $data['break_start'] ?? null,
-            'break_end'   => $data['break_end'] ?? null,
-            'memo'        => $data['memo'],
+            'clock_in'  => $data['clock_in'],
+            'clock_out' => $data['clock_out'],
+            'note'      => $data['memo'],
+            'status'    => 'approved', // 直接修正は承認済み扱いに寄せる場合
         ]);
 
-        return redirect()->back()->with('success', '勤怠情報を修正しました。');
+        // 休憩を break_times で更新
+        $attendance->breaks()->delete();
+
+        $breakStart = $data['break_start'] ?? null; // H:i or null
+        $breakEnd   = $data['break_end'] ?? null;   // H:i or null
+
+        if ($breakStart || $breakEnd) {
+            $attendance->breaks()->create([
+                'break_in'  => $breakStart ? Carbon::parse($attendance->date . ' ' . $breakStart) : null,
+                'break_out' => $breakEnd   ? Carbon::parse($attendance->date . ' ' . $breakEnd)   : null,
+            ]);
+        }
+
+        return redirect()->route('attendance.show', $attendance->id)
+            ->with('success', '勤怠情報を修正しました。');
     }
 }
