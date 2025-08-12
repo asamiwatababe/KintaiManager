@@ -9,10 +9,17 @@
 
 @section('content')
 @php
-// 保存済みの休憩（最初の1本）を初期値として使う
-$firstBreak = optional($attendance->breaks)->sortBy('break_in')->first();
-$initBreakIn = $firstBreak && $firstBreak->break_in ? \Carbon\Carbon::parse($firstBreak->break_in)->format('H:i') : '';
-$initBreakOut = $firstBreak && $firstBreak->break_out ? \Carbon\Carbon::parse($firstBreak->break_out)->format('H:i') : '';
+// 保存済みの先頭2本の休憩を初期表示に使用
+$sorted = optional($attendance->breaks)->sortBy('break_in')->values();
+
+$b1 = $sorted->get(0);
+$b2 = $sorted->get(1);
+
+$initBreak1In = $b1 && $b1->break_in ? \Carbon\Carbon::parse($b1->break_in)->format('H:i') : '';
+$initBreak1Out = $b1 && $b1->break_out ? \Carbon\Carbon::parse($b1->break_out)->format('H:i') : '';
+
+$initBreak2In = $b2 && $b2->break_in ? \Carbon\Carbon::parse($b2->break_in)->format('H:i') : '';
+$initBreak2Out = $b2 && $b2->break_out ? \Carbon\Carbon::parse($b2->break_out)->format('H:i') : '';
 @endphp
 
 <div class="container">
@@ -32,41 +39,49 @@ $initBreakOut = $firstBreak && $firstBreak->break_out ? \Carbon\Carbon::parse($f
                 <td>{{ \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') }}</td>
             </tr>
 
-            {{-- 出勤・退勤（※ old は使わず DB 値のみ） --}}
+            {{-- 出勤・退勤（通常はDB値、バリデ時はoldを優先） --}}
             <tr>
                 <th>出勤・退勤</th>
                 <td>
                     <input type="time" name="clock_in"
-                        value="{{ $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}"
-                        autocomplete="off">
+                        value="{{ old('clock_in', $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
                     ～
                     <input type="time" name="clock_out"
-                        value="{{ $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}"
-                        autocomplete="off">
-
+                        value="{{ old('clock_out', $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
                     @error('clock_in') <p class="error">{{ $message }}</p> @enderror
                     @error('clock_out') <p class="error">{{ $message }}</p> @enderror
                 </td>
             </tr>
 
-            {{-- 休憩（※ old は使わず break_times から反映） --}}
+            {{-- 休憩1（通常はDB値、バリデ時はoldを優先） --}}
             <tr>
                 <th>休憩</th>
                 <td>
-                    <input type="time" name="break_start" value="{{ $initBreakIn }}" autocomplete="off">
+                    <input type="time" name="break_1_start" value="{{ old('break_1_start', $initBreak1In) }}">
                     ～
-                    <input type="time" name="break_end" value="{{ $initBreakOut }}" autocomplete="off">
-
-                    @error('break_start') <p class="error">{{ $message }}</p> @enderror
-                    @error('break_end') <p class="error">{{ $message }}</p> @enderror
+                    <input type="time" name="break_1_end" value="{{ old('break_1_end', $initBreak1Out) }}">
+                    @error('break_1_start') <p class="error">{{ $message }}</p> @enderror
+                    @error('break_1_end') <p class="error">{{ $message }}</p> @enderror
                 </td>
             </tr>
 
-            {{-- 備考（※ 常に空で表示。old も DB も使わない） --}}
+            {{-- 休憩2（通常はDB値、バリデ時はoldを優先） --}}
+            <tr>
+                <th>休憩2</th>
+                <td>
+                    <input type="time" name="break_2_start" value="{{ old('break_2_start', $initBreak2In) }}">
+                    ～
+                    <input type="time" name="break_2_end" value="{{ old('break_2_end', $initBreak2Out) }}">
+                    @error('break_2_start') <p class="error">{{ $message }}</p> @enderror
+                    @error('break_2_end') <p class="error">{{ $message }}</p> @enderror
+                </td>
+            </tr>
+
+            {{-- 備考：初回は空、エラー時はoldで保持 --}}
             <tr>
                 <th>備考</th>
                 <td>
-                    <input type="text" name="note" value=""  autocomplete="off">
+                    <input type="text" name="note" value="{{ old('note', '') }}">
                     @error('note') <p class="error">{{ $message }}</p> @enderror
                 </td>
             </tr>

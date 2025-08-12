@@ -3,36 +3,69 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
+use Carbon\Carbon;
 
 class AttendanceCorrectionRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return true;
+        return true; // auth ミドルウェアで保護済み想定
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'clock_in' => ['required', 'date_format:H:i'],
-            'clock_out' => ['required', 'date_format:H:i', 'after:clock_in'],
-            'break_start' => ['nullable', 'date_format:H:i', 'after_or_equal:clock_in', 'before_or_equal:clock_out'],
-            'break_end' => ['nullable', 'date_format:H:i', 'after_or_equal:clock_in', 'before_or_equal:clock_out'],
-            'note' => ['required', 'string', 'max:255'],
+            'clock_in'       => ['required', 'date_format:H:i'],
+            'clock_out'      => ['required', 'date_format:H:i', 'after:clock_in'],
+
+            'break_1_start'  => ['nullable', 'date_format:H:i'],
+            'break_1_end'    => ['nullable', 'date_format:H:i', 'after:break_1_start'],
+
+            'break_2_start'  => ['nullable', 'date_format:H:i'],
+            'break_2_end'    => ['nullable', 'date_format:H:i', 'after:break_2_start'],
+
+            'note'           => ['required', 'string', 'max:255'],
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'clock_in.required' => '出勤時間を入力してください',
-            'clock_out.required' => '退勤時間を入力してください',
-            'clock_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
-            'break_start.after_or_equal' => '休憩開始時間は出勤時間以降にしてください',
-            'break_start.before_or_equal' => '休憩時間が勤務時間外です',
-            'break_end.after_or_equal' => '休憩終了時間は出勤時間以降にしてください',
-            'break_end.before_or_equal' => '休憩時間が勤務時間外です',
-            'note.required' => '備考を記入してください',
+            'clock_out.after'   => '出勤時間もしくは退勤時間が不適切な値です',
+            'break_1_end.after' => '休憩時間が勤務時間外です',
+            'break_2_end.after' => '休憩時間が勤務時間外です',
+            'note.required'     => '備考を記入してください',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            $ci = $this->input('clock_in');
+            $co = $this->input('clock_out');
+            if (!$ci || !$co) return;
+
+            $clockIn  = Carbon::createFromFormat('H:i', $ci);
+            $clockOut = Carbon::createFromFormat('H:i', $co);
+
+            foreach ([1, 2] as $i) {
+                $bs = $this->input("break_{$i}_start");
+                $be = $this->input("break_{$i}_end");
+
+                if ($bs) {
+                    $bsC = Carbon::createFromFormat('H:i', $bs);
+                    if ($bsC->lt($clockIn) || $bsC->gt($clockOut)) {
+                        $v->errors()->add("break_{$i}_start", '休憩時間が勤務時間外です');
+                    }
+                }
+                if ($be) {
+                    $beC = Carbon::createFromFormat('H:i', $be);
+                    if ($beC->lt($clockIn) || $beC->gt($clockOut)) {
+                        $v->errors()->add("break_{$i}_end", '休憩時間が勤務時間外です');
+                    }
+                }
+            }
+        });
     }
 }

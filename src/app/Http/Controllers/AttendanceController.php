@@ -214,20 +214,25 @@ class AttendanceController extends Controller
         $attendance = Attendance::findOrFail($id);
 
         DB::transaction(function () use ($attendance, $request) {
-            Log::info('Inside transaction start');
 
+            // 勤怠ステータスを申請中に
             $attendance->update(['status' => 'pending']);
-            Log::info('Attendance status updated');
+
+            // 休憩2本のうち、申請テーブルのカラムに入るのは「休憩1」。
+            // 休憩2は備考に追記して管理者が承認時に break_times へ反映できるようにする。
+            $note = $request->note;
 
             StampCorrectionRequest::create([
-                'user_id' => auth()->id(),
-                'date' => $attendance->date,
-                'clock_in' => $request->clock_in,
-                'clock_out' => $request->clock_out,
-                'break_in' => $request->break_start ?? null,
-                'break_out' => $request->break_end ?? null,
-                'note' => $request->note,
-                'status' => 'pending',
+                'user_id'       => auth()->id(),
+                'attendance_id' => $attendance->id,   // カラムがあれば保存
+                'date'          => $attendance->date,
+                'clock_in'      => $request->clock_in,
+                'clock_out'     => $request->clock_out,
+                // 休憩1のみを専用カラムへ
+                'break_in'      => $request->break_1_start ?: null,
+                'break_out'     => $request->break_1_end   ?: null,
+                'note'          => $note,
+                'status'        => 'pending',
             ]);
         });
 

@@ -1,3 +1,4 @@
+{{-- resources/views/admin/attendance/admindetail.blade.php --}}
 @extends('layouts.admin_app')
 
 @section('title', '管理者勤怠詳細')
@@ -7,9 +8,8 @@
 @endsection
 
 @section('content')
-<h2 class="title">勤怠詳細</h2>
-
 @php
+// 保存済みの先頭2本の休憩を初期表示に使用
 $sorted = optional($attendance->breaks)->sortBy('break_in')->values();
 
 $b1 = $sorted->get(0);
@@ -22,80 +22,77 @@ $initBreak2In = $b2 && $b2->break_in ? \Carbon\Carbon::parse($b2->break_in)->for
 $initBreak2Out = $b2 && $b2->break_out ? \Carbon\Carbon::parse($b2->break_out)->format('H:i') : '';
 @endphp
 
-<form method="POST" action="{{ route('admin.attendance.update', $attendance->id) }}" autocomplete="off">
-    @csrf
-    @method('PUT')
+<div class="container">
+    <h2 class="title">勤怠詳細</h2>
 
-    <table>
-        <tr>
-            <th>名前</th>
-            <td>{{ $attendance->user->name }}</td>
-        </tr>
-        <tr>
-            <th>日付</th>
-            <td>{{ \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') }}</td>
-        </tr>
+    <form method="POST" action="{{ route('admin.attendance.update', $attendance->id) }}" autocomplete="off">
+        @csrf
+        @method('PUT')
 
-        {{-- 出勤・退勤（バリデ時は old、通常はDB値） --}}
-        <tr>
-            <th>出勤・退勤</th>
-            <td>
-                <input type="time" name="clock_in"
-                    value="{{ old('clock_in', $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
-                ～
-                <input type="time" name="clock_out"
-                    value="{{ old('clock_out', $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
-                @error('clock_in') <p class="error">{{ $message }}</p> @enderror
-                @error('clock_out') <p class="error">{{ $message }}</p> @enderror
-            </td>
-        </tr>
+        <table class="detail-table">
+            <tr>
+                <th>名前</th>
+                <td>{{ $attendance->user->name }}</td>
+            </tr>
+            <tr>
+                <th>日付</th>
+                <td>{{ \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') }}</td>
+            </tr>
 
-        {{-- 休憩1 --}}
-        <tr>
-            <th>休憩</th>
-            <td>
-                <input type="time" name="break_1_start" value="{{ old('break_1_start', $initBreak1In) }}">
-                ～
-                <input type="time" name="break_1_end" value="{{ old('break_1_end', $initBreak1Out) }}">
-                @error('break_1_start') <p class="error">{{ $message }}</p> @enderror
-                @error('break_1_end') <p class="error">{{ $message }}</p> @enderror
-            </td>
-        </tr>
+            {{-- 出勤・退勤（バリデ時は old、通常はDB値） --}}
+            <tr>
+                <th>出勤・退勤</th>
+                <td>
+                    <input type="time" name="clock_in"
+                        value="{{ old('clock_in', $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
+                    ～
+                    <input type="time" name="clock_out"
+                        value="{{ old('clock_out', $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
 
-        {{-- 休憩2 --}}
-        <tr>
-            <th>休憩2</th>
-            <td>
-                <input type="time" name="break_2_start" value="{{ old('break_2_start', $initBreak2In) }}">
-                ～
-                <input type="time" name="break_2_end" value="{{ old('break_2_end', $initBreak2Out) }}">
-                @error('break_2_start') <p class="error">{{ $message }}</p> @enderror
-                @error('break_2_end') <p class="error">{{ $message }}</p> @enderror
-            </td>
-        </tr>
+                    @error('clock_in') <p class="error">{{ $message }}</p> @enderror
+                    @error('clock_out') <p class="error">{{ $message }}</p> @enderror
+                </td>
+            </tr>
 
-        {{-- 備考（初期は空。エラー時のみ old を保持） --}}
-        <tr>
-            <th>備考</th>
-            <td>
-                <input type="text" name="memo" value="{{ old('memo', '') }}" placeholder="備考を入力">
-                @error('memo') <p class="error">{{ $message }}</p> @enderror
-            </td>
-        </tr>
-    </table>
+            {{-- 休憩1 --}}
+            <tr>
+                <th>休憩</th>
+                <td>
+                    <input type="time" name="break_1_start" value="{{ old('break_1_start', $initBreak1In) }}">
+                    ～
+                    <input type="time" name="break_1_end" value="{{ old('break_1_end', $initBreak1Out) }}">
 
-    @if ($errors->any())
-    <div class="errors">
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+                    @error('break_1_start') <p class="error">{{ $message }}</p> @enderror
+                    @error('break_1_end') <p class="error">{{ $message }}</p> @enderror
+                </td>
+            </tr>
 
-    <div class="button-area">
-        <button type="submit" class="submit-btn">修正</button>
-    </div>
-</form>
+            {{-- 休憩2 --}}
+            <tr>
+                <th>休憩2</th>
+                <td>
+                    <input type="time" name="break_2_start" value="{{ old('break_2_start', $initBreak2In) }}">
+                    ～
+                    <input type="time" name="break_2_end" value="{{ old('break_2_end', $initBreak2Out) }}">
+
+                    @error('break_2_start') <p class="error">{{ $message }}</p> @enderror
+                    @error('break_2_end') <p class="error">{{ $message }}</p> @enderror
+                </td>
+            </tr>
+
+            {{-- 備考（初期は空。エラー時のみ old を保持） --}}
+            <tr>
+                <th>備考</th>
+                <td>
+                    <input type="text" name="memo" value="{{ old('memo', '') }}" placeholder="備考を入力">
+                    @error('memo') <p class="error">{{ $message }}</p> @enderror
+                </td>
+            </tr>
+        </table>
+
+        <div class="button-area">
+            <button type="submit" class="submit-btn">修正</button>
+        </div>
+    </form>
+</div>
 @endsection

@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', '申請一覧')
-
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/request_list.css') }}">
 @endsection
@@ -27,20 +26,18 @@
     </thead>
     <tbody>
         @foreach ($pending as $request)
+        @php
+        // 「（休憩2: HH:MM〜HH:MM）」を表示から除去（全角/半角・〜/~ 対応）
+        $reason = $request->note ?? '';
+        $reason = preg_replace('/（休憩2[:：]?\s*\d{2}:\d{2}[〜~]\d{2}:\d{2}）/u', '', $reason);
+        @endphp
         <tr>
             <td>承認待ち</td>
             <td>{{ $request->user->name }}</td>
             <td>{{ $request->date }}</td>
-            <td>{{ $request->note }}</td>
+            <td>{{ trim($reason) }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td>
-                @if ($request->attendance_id)
-                    {{-- 勤怠一覧の承認待ち詳細と同じ遷移先 --}}
-                    <a href="{{ route('attendance.pending', $request->attendance_id) }}">詳細</a>
-                @else
-                    -
-                @endif
-            </td>
+            <td><a href="{{ route('attendance.show', optional($request->attendance)->id ?? '') }}">詳細</a></td>
         </tr>
         @endforeach
     </tbody>
@@ -59,20 +56,17 @@
     </thead>
     <tbody>
         @foreach ($approved as $request)
+        @php
+        $reason = $request->note ?? '';
+        $reason = preg_replace('/（休憩2[:：]?\s*\d{2}:\d{2}[〜~]\d{2}:\d{2}）/u', '', $reason);
+        @endphp
         <tr>
             <td>承認済み</td>
             <td>{{ $request->user->name }}</td>
             <td>{{ $request->date }}</td>
-            <td>{{ $request->note }}</td>
+            <td>{{ trim($reason) }}</td>
             <td>{{ $request->created_at->format('Y/m/d') }}</td>
-            <td>
-                @if ($request->attendance_id)
-                    {{-- 勤怠一覧の通常詳細と同じ遷移先 --}}
-                    <a href="{{ route('attendance.show', $request->attendance_id) }}">詳細</a>
-                @else
-                    -
-                @endif
-            </td>
+            <td>—</td>
         </tr>
         @endforeach
     </tbody>
