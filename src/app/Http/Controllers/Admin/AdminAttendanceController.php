@@ -12,19 +12,27 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminAttendanceController extends Controller
 {
-    public function list(Request $request)
+    /**
+     * 管理者：月次勤怠一覧（一般ユーザーの月次UIに合わせる）
+     * ?month=YYYY-MM（省略時は当月）
+     */
+    public function index(Request $request)
     {
-        $date = $request->input('date') ?? now()->toDateString();
+        $month = $request->input('month') ?? now()->format('Y-m');
+
+        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $end   = (clone $start)->endOfMonth();
 
         $attendances = Attendance::with(['user', 'breaks'])
-            ->where('date', $date)
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->orderBy('date')
             ->get();
 
         return view('admin.attendance.list', [
-            'attendances'  => $attendances,
-            'currentDate'  => $date,
-            'previousDate' => Carbon::parse($date)->subDay()->toDateString(),
-            'nextDate'     => Carbon::parse($date)->addDay()->toDateString(),
+            'attendances'   => $attendances,
+            'currentMonth'  => $month,
+            'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
+            'nextMonth'     => $start->copy()->addMonth()->format('Y-m'),
         ]);
     }
 
@@ -43,10 +51,19 @@ class AdminAttendanceController extends Controller
     public function showStaffAttendance($id, Request $request)
     {
         $user  = User::findOrFail($id);
+
+        // 表示対象の月（YYYY-MM）。指定がなければ当月
         $month = $request->input('month') ?? now()->format('Y-m');
 
+        // 当月の1日と前後月を計算（ナビ用）
+        $base      = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $prevMonth = $base->copy()->subMonth()->format('Y-m');
+        $nextMonth = $base->copy()->addMonth()->format('Y-m');
+
+        // 指定月だけを取得（YYYY-MM% で絞り込み）
         $attendances = Attendance::with('breaks')
             ->where('user_id', $id)
+            ->where('date', 'like', $month . '%')
             ->orderBy('date')
             ->get();
 
@@ -54,8 +71,11 @@ class AdminAttendanceController extends Controller
             'user'         => $user,
             'attendances'  => $attendances,
             'currentMonth' => $month,
+            'previousMonth' => $prevMonth,
+            'nextMonth'    => $nextMonth,
         ]);
     }
+
 
     // CSV（ルート名に合わせて exportStaffAttendanceCsv に統一）
     public function exportStaffAttendanceCsv($id)
@@ -118,24 +138,23 @@ class AdminAttendanceController extends Controller
     /**
      * 管理者：勤怠詳細の修正保存
      * - 出勤/退勤/備考は attendances へ
-     * - 休憩は break_times（relations: breaks）へ
-     *   既存の休憩は一旦削除して、フォームの1本分を入れ直す
-     * - バリデーションは AdminAttendanceUpdateRequest で実施
+     * - 休憩は break_times へ（既存削除→2本入れ直し）
+     * - バリデーションは AdminAttendanceUpdateRequest
      */
     public function adminUpdate(AdminAttendanceUpdateRequest $request, $id)
     {
         $attendance = Attendance::with('breaks')->findOrFail($id);
         $data = $request->validated();
 
-        // 1) 勤怠本体（備考は note に保存）
+        // 勤怠本体（備考は note に保存）
         $attendance->update([
             'clock_in'  => $data['clock_in'],
             'clock_out' => $data['clock_out'],
-            'note'      => $data['memo'],
-            'status'    => 'approved', // 直接修正は承認済み扱いにする場合
+            'note'      => $data['memo'] ?? null,
+            'status'    => 'approved',
         ]);
 
-        // 2) 休憩2本を break_times に保存（既存は全削除 → 入れ直し）
+        // 休憩を全削除 → 2本を入れ直し
         $attendance->breaks()->delete();
 
         $pairs = [

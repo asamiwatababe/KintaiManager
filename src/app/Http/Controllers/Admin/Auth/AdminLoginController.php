@@ -3,28 +3,42 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\AdminLoginRequest;
 
 class AdminLoginController extends Controller
 {
-    public function showLoginForm()
+    public function login(Request $request)
     {
-        return view('admin.auth.login');
-    }
+        // 入力チェック（要件の日本語メッセージ）
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required'],
+        ], [
+            'email.required'    => 'メールアドレスを入力してください',
+            'password.required' => 'パスワードを入力してください',
+        ]);
 
-    public function login(AdminLoginRequest $request)
-    {
-        $credentials = $request->only('email', 'password');
+        // 認証試行
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
 
-        // 認証処理（is_admin チェックは削除）
-        if (Auth::attempt($credentials)) {
-            return redirect()->intended('/admin/attendance/list');
+            // 管理者でなければ失敗扱いにして戻す
+            $user = Auth::user();
+            if (!$user || !$user->is_admin) {
+                Auth::logout();
+                return back()
+                    ->withErrors(['email' => trans('auth.failed')]) // 「ログイン情報が登録されていません」
+                    ->onlyInput('email');
+            }
+
+            // 成功：管理者の一覧へ
+            return redirect()->route('admin.attendance.list');
         }
 
-        // 認証失敗時のメッセージ（常にこれだけ）
-        return back()->withErrors([
-            'auth' => 'ログイン情報が登録されていません',
-        ])->withInput();
+        // 認証失敗：Fortify と同様に email キーで返す
+        return back()
+            ->withErrors(['email' => trans('auth.failed')])
+            ->onlyInput('email');
     }
 }

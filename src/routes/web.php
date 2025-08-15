@@ -93,7 +93,7 @@ Route::post('/admin/logout', function () {
 // ==========================
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     // 日次勤怠一覧
-    Route::get('/attendance/list', [AdminAttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/attendance/list', [AdminAttendanceController::class, 'index'])->name('attendance.list');
 
     // ★旧URL互換：/admin/attendance/{id} → /attendance/{id} にリダイレクト
     Route::get('/attendance/{id}', function (int $id) {

@@ -30,10 +30,10 @@ class AttendanceController extends Controller
             ->where('date', Carbon::today())
             ->first();
 
-        $status = '未出勤';
+        $status = '勤務外';
 
         if ($attendance) {
-            $status = '出勤中';
+            $status = '勤務中';
 
             $latestBreak = $attendance->breaks()->latest()->first();
             if ($latestBreak && $latestBreak->break_in && !$latestBreak->break_out) {
@@ -208,35 +208,31 @@ class AttendanceController extends Controller
     }
 
 
-    public function requestUpdate(AttendanceCorrectionRequest $request, $id)
+    public function requestUpdate(AttendanceCorrectionRequest $request, int $id)
     {
-        Log::info('requestUpdate called', ['id' => $id]);
-        $attendance = Attendance::findOrFail($id);
+        $attendance = Attendance::with('breaks')->findOrFail($id);
 
-        DB::transaction(function () use ($attendance, $request) {
+        // バリデーション済みデータ
+        $data = $request->validated();
 
-            // 勤怠ステータスを申請中に
-            $attendance->update(['status' => 'pending']);
+        // 修正申請レコードを作成（休憩1のみを専用カラムへ保存）
+        StampCorrectionRequest::create([
+            'user_id'       => $attendance->user_id,
+            'attendance_id' => $attendance->id,
+            'date'          => $attendance->date,
+            'clock_in'      => $data['clock_in'] ?? null,
+            'clock_out'     => $data['clock_out'] ?? null,
+            'break_in'      => $data['break_1_start'] ?? null,
+            'break_out'     => $data['break_1_end'] ?? null,
+            // 備考はそのまま保存（休憩2の追記はしない）
+            'note'          => $data['note'],
+            'status'        => 'pending',
+        ]);
 
-            // 休憩2本のうち、申請テーブルのカラムに入るのは「休憩1」。
-            // 休憩2は備考に追記して管理者が承認時に break_times へ反映できるようにする。
-            $note = $request->note;
-
-            StampCorrectionRequest::create([
-                'user_id'       => auth()->id(),
-                'attendance_id' => $attendance->id,   // カラムがあれば保存
-                'date'          => $attendance->date,
-                'clock_in'      => $request->clock_in,
-                'clock_out'     => $request->clock_out,
-                // 休憩1のみを専用カラムへ
-                'break_in'      => $request->break_1_start ?: null,
-                'break_out'     => $request->break_1_end   ?: null,
-                'note'          => $note,
-                'status'        => 'pending',
-            ]);
-        });
-
-        return redirect()->route('attendance.list')->with('success', '修正申請を送信しました。');
+        // 申請後は「一覧」に戻す
+        return redirect()
+            ->route('attendance.list')
+            ->with('success', '修正申請を受け付けました。');
     }
 
 

@@ -36,8 +36,17 @@
                 @foreach ($attendances as $attendance)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($attendance->date)->format('m/d(D)') }}</td>
-                    <td>{{ $attendance->clock_in ?? '-' }}</td>
-                    <td>{{ $attendance->clock_out ?? '-' }}</td>
+                    <td>
+                        {{ $attendance->clock_in
+      ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i')
+      : '-' }}
+                    </td>
+                    <td>
+                        {{ $attendance->clock_out
+      ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i')
+      : '-' }}
+                    </td>
+
                     <td>{{ $attendance->break_duration ?? '-' }}</td>
                     <td>{{ $attendance->work_duration ?? '-' }}</td>
                     <!-- statusがpendingの場合は承認待ち画面に遷移 -->
