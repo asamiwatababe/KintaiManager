@@ -1,4 +1,3 @@
-{{-- resources/views/attendance/detail.blade.php --}}
 @extends('layouts.app')
 
 @section('title', '勤怠詳細')

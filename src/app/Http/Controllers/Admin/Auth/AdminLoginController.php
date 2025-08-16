@@ -10,7 +10,7 @@ class AdminLoginController extends Controller
 {
     public function login(Request $request)
     {
-        // 入力チェック（要件の日本語メッセージ）
+        // 入力チェック
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],

@@ -20,7 +20,7 @@ class StampCorrectionRequestController extends Controller
     // 管理者用の申請詳細（承認画面）
     public function show(StampCorrectionRequest $attendance_correct_request)
     {
-        // 申請のユーザー・紐づく勤怠(あれば)・休憩をロード
+        // 申請のユーザー・紐づく勤怠・休憩をロード
         $attendance_correct_request->load(['user', 'attendance.breaks']);
 
         // 紐づく勤怠が無い場合は、ユーザーIDと日付から推測して補完
@@ -33,9 +33,9 @@ class StampCorrectionRequestController extends Controller
         }
 
         return view('admin.request.show', [
-            'request'    => $attendance_correct_request, // Blade では $request という変数名で受けます
+            'request'    => $attendance_correct_request, 
             'user'       => $attendance_correct_request->user,
-            'attendance' => $attendance,  // 無ければ null のまま渡す（Blade 側で安全に表示）
+            'attendance' => $attendance,  // 無ければ null のまま渡す
         ]);
     }
 

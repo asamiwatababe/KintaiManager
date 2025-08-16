@@ -15,9 +15,8 @@
         <h2>{{ $date }}</h2>
         <h1>{{ $time }}</h1>
 
-        {{-- ステータス表示（テストが見る場所） --}}
+        {{-- ステータス表示 --}}
         <div class="status-row" style="margin: 12px 0;">
-            <span class="status-label" style="font-weight:600;">ステータス：</span>
             <span class="status-value" data-testid="attendance-status">{{ $status }}</span>
         </div>
 

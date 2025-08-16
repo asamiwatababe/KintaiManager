@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AdminAttendanceController extends Controller
 {
     /**
-     * 管理者：月次勤怠一覧（一般ユーザーの月次UIに合わせる）
+     * 管理者：月次勤怠一覧
      * ?month=YYYY-MM（省略時は当月）
      */
     public function index(Request $request)
@@ -52,10 +52,10 @@ class AdminAttendanceController extends Controller
     {
         $user  = User::findOrFail($id);
 
-        // 表示対象の月（YYYY-MM）。指定がなければ当月
+        // 表示対象の月（YYYY-MM）
         $month = $request->input('month') ?? now()->format('Y-m');
 
-        // 当月の1日と前後月を計算（ナビ用）
+        // 当月の1日と前後月を計算
         $base      = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
         $prevMonth = $base->copy()->subMonth()->format('Y-m');
         $nextMonth = $base->copy()->addMonth()->format('Y-m');
@@ -77,7 +77,7 @@ class AdminAttendanceController extends Controller
     }
 
 
-    // CSV（ルート名に合わせて exportStaffAttendanceCsv に統一）
+    // CSV
     public function exportStaffAttendanceCsv($id)
     {
         $user = User::findOrFail($id);

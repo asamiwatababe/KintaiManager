@@ -16,14 +16,14 @@ class ClockOutFeatureTest extends TestCase
     public function 退勤ボタンが機能し_処理後にステータスが退勤済になる()
     {
         // today: 2025-01-02
-        Carbon::setTestNow('2025-01-02 09:00:00');
+        Carbon::setTestNow('2025-01-02 09:00');
 
         $user = User::factory()->create();
         // 出勤済（勤務中）にしておく：当日レコードあり、clock_out なし
         Attendance::factory()->create([
             'user_id'  => $user->id,
             'date'     => Carbon::today()->toDateString(),
-            'clock_in' => '09:00:00',
+            'clock_in' => '09:00',
             'clock_out' => null,
         ]);
 
@@ -35,7 +35,7 @@ class ClockOutFeatureTest extends TestCase
             ->assertSee('退勤');
 
         // 18:00 に退勤
-        Carbon::setTestNow('2025-01-02 18:00:00');
+        Carbon::setTestNow('2025-01-02 18:00');
         $this->post(route('attendance.clockout'))
             ->assertRedirect(route('attendance'));
 
@@ -49,7 +49,7 @@ class ClockOutFeatureTest extends TestCase
     public function 退勤時刻が勤怠一覧画面で確認できる()
     {
         // today: 2025-01-03
-        Carbon::setTestNow('2025-01-03 09:00:00');
+        Carbon::setTestNow('2025-01-03 09:00');
 
         $user = User::factory()->create();
 
@@ -57,23 +57,23 @@ class ClockOutFeatureTest extends TestCase
         Attendance::factory()->create([
             'user_id'  => $user->id,
             'date'     => Carbon::today()->toDateString(),
-            'clock_in' => '09:00:00',
+            'clock_in' => '09:00',
             'clock_out' => null,
         ]);
 
         // 18:00 に退勤
-        Carbon::setTestNow('2025-01-03 18:00:00');
+        Carbon::setTestNow('2025-01-03 18:00');
         /** @var User $user */
         $this->actingAs($user)
             ->post(route('attendance.clockout'))
             ->assertRedirect(route('attendance'));
 
         // 月次一覧で退勤時刻が表示される（ビューは H:i:s をそのまま出力）
-        Carbon::setTestNow('2025-01-03 18:05:00');
+        Carbon::setTestNow('2025-01-03 18:05');
         $month = Carbon::now()->format('Y-m');
 
         $this->get(route('attendance.list', ['month' => $month]))
             ->assertOk()
-            ->assertSee('18:00:00');
+            ->assertSee('18:00');
     }
 }
