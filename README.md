@@ -49,7 +49,7 @@ php artisan migrate:fresh --seed --env=testing
 
 # 4) テスト実行
 php artisan test --env=testing
-)
+```
 
 ## ダミーデータ
 このリポジトリにはダミーデータ Seeder を用意しています。
