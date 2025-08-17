@@ -41,17 +41,17 @@
 # 1) 複製
 cp .env .env.testing
 
-# 3) APP_KEY 発行（.env.testing に対して）
+# 2) APP_KEY 発行（.env.testing に対して）
 php artisan key:generate --env=testing
 
-# 4) マイグレーション + シード（テスト用DB）
+# 3) マイグレーション + シード（テスト用DB）
 php artisan migrate:fresh --seed --env=testing
 
-# 5) テスト実行
+# 4) テスト実行
 php artisan test --env=testing
+)
 
-## テスト実行
-
+## ダミーデータ
 このリポジトリにはダミーデータ Seeder を用意しています。
 
 ### 実行手順
