@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Carbon\Carbon;
+
 
 class Attendance extends Model
 {
@@ -50,5 +52,39 @@ class Attendance extends Model
     public function correctionRequest(): HasOne
     {
         return $this->hasOne(StampCorrectionRequest::class)->latestOfMany();
+    }
+
+    public function getBreakMinutesAttribute(): int
+    {
+        $mins = 0;
+        foreach ($this->breaks ?? [] as $b) {
+            if ($b->break_in && $b->break_out) {
+                $mins += Carbon::parse($b->break_out)->diffInMinutes(Carbon::parse($b->break_in));
+            }
+        }
+        return $mins;
+    }
+
+    private function formatHm(int $minutes): string
+    {
+        $h = intdiv($minutes, 60);
+        $m = $minutes % 60;
+        return "{$h}h " . sprintf('%02dm', $m);
+    }
+
+    public function getBreakDurationAttribute(): string
+    {
+        // 休憩ゼロは "-" でよければこれ、"0h 00m" を出したければ return $this->formatHm(0);
+        return $this->break_minutes > 0 ? $this->formatHm($this->break_minutes) : '-';
+    }
+
+    public function getWorkDurationAttribute(): string
+    {
+        if (!$this->clock_in || !$this->clock_out) return '-';
+        $start = Carbon::parse($this->clock_in);
+        $end   = Carbon::parse($this->clock_out);
+        $mins  = $end->diffInMinutes($start) - $this->break_minutes;
+        if ($mins < 0) $mins = 0;
+        return $this->formatHm($mins);
     }
 }
