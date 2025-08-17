@@ -178,16 +178,6 @@ class AttendanceController extends Controller
         return redirect()->route('attendance')->with('success', 'お疲れ様でした。');
     }
 
-    // 管理者か一般ユーザーかでビューを分ける処理
-    // public function showDetail($id)
-    // {
-    //     $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
-    //     $breaks = $attendance->breaks->sortBy('break_in')->values();
-    //     $user = $attendance->user;
-
-    //     return view('attendance.detail', compact('attendance', 'breaks', 'user'));
-    // }
-
     public function showDetail($id)
     {
         $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);

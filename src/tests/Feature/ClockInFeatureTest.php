@@ -35,10 +35,13 @@ class ClockInFeatureTest extends TestCase
 
         // 出勤前（勤務外）：ボタン表示
         $res = $this->get(route('attendance'));
-        $res->assertStatus(200);
-        $res->assertSee('ステータス：', false);
+        $res->assertOk();
+        // ステータス表示の存在を data-testid で確認し、値は「勤務外」を確認
+        $res->assertSee('data-testid="attendance-status"', false);
         $res->assertSee('勤務外', false);
+        // 出勤ボタンが見える
         $res->assertSee('出勤', false);
+
 
         // 出勤処理
         $post = $this->post(route('attendance.clockin'));

@@ -110,10 +110,6 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         ->whereNumber('id')->name('attendance.staff');
     Route::get('/attendance/staff/{id}/csv', [AdminAttendanceController::class, 'exportStaffAttendanceCsv'])
         ->whereNumber('id')->name('attendance.staff.csv');
-
-    // （任意）管理者の旧 申請詳細URLは必要なら残せますが、基本は共通パスを使用
-    // Route::get('/stamp_correction_request/{attendance_correct_request}', [AdminStampController::class, 'show'])
-    //     ->whereNumber('attendance_correct_request')->name('stamp_correction_request.show');
 });
 
 // ==========================
