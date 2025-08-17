@@ -16,25 +16,47 @@ class AdminAttendanceController extends Controller
      * 管理者：月次勤怠一覧
      * ?month=YYYY-MM（省略時は当月）
      */
+
     public function index(Request $request)
     {
-        $month = $request->input('month') ?? now()->format('Y-m');
+        // 月指定があれば「月次」、無ければ「日次」
+        if ($request->filled('month')) {
+            // --- 月次 ---
+            $month = $request->input('month');                   // e.g. 2025-01
+            $start = \Carbon\Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+            $end   = $start->copy()->endOfMonth();
 
-        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
-        $end   = (clone $start)->endOfMonth();
+            $attendances = Attendance::with(['user', 'breaks'])
+                ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                ->orderBy('date')->orderBy('user_id')
+                ->get();
+
+            return view('admin.attendance.list', [
+                'mode'         => 'monthly',
+                'attendances'  => $attendances,
+                'currentMonth' => $month,
+                'previousMonth' => $start->copy()->subMonthNoOverflow()->format('Y-m'),
+                'nextMonth'    => $start->copy()->addMonthNoOverflow()->format('Y-m'),
+            ]);
+        }
+
+        // --- 日次 ---
+        $date = $request->input('date', now()->toDateString()); // e.g. 2025-06-01
 
         $attendances = Attendance::with(['user', 'breaks'])
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->orderBy('date')
+            ->where('date', $date)
+            ->orderBy('user_id')
             ->get();
 
         return view('admin.attendance.list', [
-            'attendances'   => $attendances,
-            'currentMonth'  => $month,
-            'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
-            'nextMonth'     => $start->copy()->addMonth()->format('Y-m'),
+            'mode'         => 'daily',
+            'attendances'  => $attendances,
+            'currentDate'  => $date,
+            'previousDate' => \Carbon\Carbon::parse($date)->subDay()->toDateString(),
+            'nextDate'     => \Carbon\Carbon::parse($date)->addDay()->toDateString(),
         ]);
     }
+
 
     public function show($id)
     {

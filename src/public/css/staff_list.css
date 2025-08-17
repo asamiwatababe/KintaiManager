@@ -1,0 +1,96 @@
+/* ページ全体の背景を淡いグレーに */
+body {
+    background: #f2f3f5;
+}
+
+/* タイトル（左に黒いバー） */
+.page-title {
+    max-width: 880px;
+    margin: 28px auto 10px;
+    padding-left: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    position: relative;
+}
+
+.page-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 22px;
+    background: #111;
+    border-radius: 3px;
+}
+
+/* テーブルを囲うカード */
+.table-card {
+    max-width: 880px;
+    margin: 16px auto 40px;
+    background: #fff;
+    border: 3px solid #2aa4ff;
+    /* サンプルの青枠っぽく */
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+    overflow: hidden;
+}
+
+/* テーブル */
+.staff-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.staff-table th,
+.staff-table td {
+    padding: 14px 18px;
+    border-top: 1px solid #e9edf3;
+    vertical-align: middle;
+}
+
+.staff-table thead th {
+    background: #f7f8fa;
+    font-weight: 700;
+    color: #111;
+}
+
+.staff-table tbody tr:hover td {
+    background: #fafcff;
+}
+
+/* メールが長いときに折り返す */
+.break-email {
+    word-break: break-all;
+}
+
+/* 中央寄せセル・空表示 */
+.cell-center {
+    text-align: center;
+}
+
+.cell-empty {
+    text-align: center;
+    color: #7a8594;
+    background: #fafbfc;
+}
+
+/* 「詳細」ボタン風リンク */
+.btn-link {
+    display: inline-block;
+    padding: 6px 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    color: #0b0f19;
+    background: #fff;
+    transition: .15s ease-in-out;
+}
+
+.btn-link:hover {
+    color: #1677ff;
+    border-color: #1677ff;
+    background: #f5faff;
+}

@@ -5,7 +5,6 @@ body {
 
 h2 {
     margin-bottom: 20px;
-    text-align: center;
 }
 
 .container {
@@ -14,31 +13,9 @@ h2 {
     padding: 30px;
 }
 
-.tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.tab {
-    padding: 10px 30px;
-    background-color: #ccc;
-    margin: 0 10px;
-    border-radius: 10px 10px 0 0;
-    text-decoration: none;
-    color: black;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.tab:hover {
-    background-color: #bbb;
-}
-
-.tab.active {
-    background-color: #ffffff;
-    border-bottom: 2px solid white;
+.title {
+    border-left: 5px solid #000;
+    padding-left: 10px;
 }
 
 .request-table {
@@ -68,7 +45,6 @@ h2 {
 }
 
 a {
-    color: #007BFF;
     text-decoration: none;
 }
 
@@ -86,18 +62,14 @@ a:hover {
     padding: 10px 20px;
     cursor: pointer;
     text-decoration: none;
-    color: #555;
-    border: 1px solid #ccc;
     border-bottom: none;
-    background-color: #f0f0f0;
     margin-right: 5px;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     font-weight: bold;
+        color: #ccc;
 }
 
 .tab.active {
-    background-color: white;
     color: black;
-    border-bottom: 2px solid white;
 }

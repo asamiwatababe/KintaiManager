@@ -5,7 +5,7 @@
 
 <body>
     <main class="register-container">
-        <h2>勤怠一覧</h2>
+        <h2 class="title">勤怠一覧</h2>
 
         <div class="month-nav">
             <form method="GET" action="{{ route('attendance.list') }}">

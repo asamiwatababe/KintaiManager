@@ -9,7 +9,7 @@
 
 @section('content')
 <main class="register-container">
-    <h2>勤怠一覧</h2>
+    <h2 class="title">勤怠一覧</h2>
 
     @php
     // 見出しの表示（Y/m）
