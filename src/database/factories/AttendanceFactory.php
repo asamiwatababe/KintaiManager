@@ -16,7 +16,7 @@ class AttendanceFactory extends Factory
         return [
             'user_id'   => User::factory(),
             'date'      => Carbon::today()->toDateString(),
-            // 実装が time カラム/文字列前提なので H:i:s で入れる
+            // 実装が time カラム/文字列前提なので H:iで入れる
             'clock_in'  => null,
             'clock_out' => null,
             'note'      => null,

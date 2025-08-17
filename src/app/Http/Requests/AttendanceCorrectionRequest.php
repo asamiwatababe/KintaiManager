@@ -10,7 +10,7 @@ class AttendanceCorrectionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // auth ミドルウェアで保護済み想定
+        return true; 
     }
 
     public function rules(): array

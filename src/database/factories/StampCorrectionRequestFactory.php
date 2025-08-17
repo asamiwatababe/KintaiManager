@@ -18,7 +18,7 @@ class StampCorrectionRequestFactory extends Factory
 
         return [
             'user_id'       => User::factory(),
-            'attendance_id' => null, // 必要に応じて ->for(Attendance::factory()) に変更
+            'attendance_id' => null,
             'date'          => $date,
             'clock_in'      => '09:00:00',
             'clock_out'     => '18:00:00',

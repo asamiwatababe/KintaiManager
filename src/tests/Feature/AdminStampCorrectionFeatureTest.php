@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Attendance;
 use App\Models\StampCorrectionRequest;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

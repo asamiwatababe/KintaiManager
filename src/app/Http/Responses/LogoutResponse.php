@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Responses/LogoutResponse.php
 namespace App\Http\Responses;
 
 use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;

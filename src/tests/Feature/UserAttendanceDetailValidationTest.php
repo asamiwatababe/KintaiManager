@@ -6,7 +6,6 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 use App\Models\Attendance;
-use App\Models\StampCorrectionRequest;
 use Carbon\Carbon;
 
 class UserAttendanceDetailValidationTest extends TestCase

@@ -10,7 +10,7 @@ class AdminAttendanceUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // is_admin ミドルウェアで守られている想定
+        return true; 
     }
 
     public function rules(): array
