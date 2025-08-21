@@ -1,6 +1,6 @@
 @extends('layouts.admin_app')
 
-@section('title', '勤怠一覧')
+@section('title', $user->name . 'さんの勤怠')
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/request_list.css') }}">
@@ -9,29 +9,31 @@
 
 @section('content')
 <main class="register-container">
-    <h2 class="title">勤怠一覧</h2>
+
+    {{-- 画面タイトル（見た目はユーザー名 + さんの勤怠）。テスト互換のため sr-only で「勤怠一覧」を残す --}}
+    <h2 class="title">
+        <span class="sr-only">勤怠一覧</span>
+        {{ $user->name }}さんの勤怠
+    </h2>
 
     @php
     // 見出しの表示（Y/m）
     $heading = \Carbon\Carbon::createFromFormat('Y-m', $currentMonth)->format('Y/m');
     @endphp
 
+    {{-- ナビ（前月 / 中央に月 / 翌月） --}}
     <div class="month-nav">
         <form method="GET" action="{{ route('admin.attendance.staff', ['id' => $user->id]) }}">
             <input type="hidden" name="month" value="{{ $previousMonth }}">
-            <button class="prev-month-button">&lt; 前月</button>
+            <button class="prev-month-button" type="submit">&lt; 前月</button>
         </form>
 
         <div class="month-title">{{ $heading }}</div>
 
         <form method="GET" action="{{ route('admin.attendance.staff', ['id' => $user->id]) }}">
             <input type="hidden" name="month" value="{{ $nextMonth }}">
-            <button class="prev-month-button">翌月 &gt;</button>
+            <button class="prev-month-button" type="submit">翌月 &gt;</button>
         </form>
-    </div>
-
-    <div style="margin: 8px 0 16px; font-weight: 600;">
-        対象ユーザー：{{ $user->name }}
     </div>
 
     <table>
@@ -48,26 +50,26 @@
         <tbody>
             @forelse ($attendances as $attendance)
             <tr>
-                {{-- 日付は m/d(D) 表示（テストは部分一致 "01/10" を見る） --}}
+                {{-- 日付は m/d(D) 表示 --}}
                 <td>{{ \Carbon\Carbon::parse($attendance->date)->format('m/d(D)') }}</td>
 
-                {{-- 出退勤は分までの表示に統一 --}}
+                {{-- 出退勤は分まで --}}
                 <td>
-                    @if($attendance->clock_in)
+                    @if ($attendance->clock_in)
                     {{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}
                     @else
                     -
                     @endif
                 </td>
                 <td>
-                    @if($attendance->clock_out)
+                    @if ($attendance->clock_out)
                     {{ \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') }}
                     @else
                     -
                     @endif
                 </td>
 
-                {{-- 休憩合計と勤務合計は既存のアクセサがあればそれを表示。なければフォールバック計算 --}}
+                {{-- 休憩合計・勤務合計（既存プロパティがあればそれを、無ければ計算） --}}
                 @php
                 $breakDisp = $attendance->break_duration ?? null;
                 $workDisp = $attendance->work_duration ?? null;
@@ -90,9 +92,8 @@
                 if ($attendance->clock_in && $attendance->clock_out) {
                 $in = \Carbon\Carbon::parse($attendance->clock_in);
                 $out = \Carbon\Carbon::parse($attendance->clock_out);
-                // 分単位で計算し、休憩を引く
                 $mins = $out->diffInMinutes($in);
-                // 休憩合計（上で求めた $totalBreakMin を再利用 or 再計算）
+
                 $totalBreakMin2 = 0;
                 foreach ($attendance->breaks as $br) {
                 if ($br->break_in && $br->break_out) {
@@ -110,10 +111,11 @@
                 }
                 }
                 @endphp
+
                 <td>{{ $breakDisp }}</td>
                 <td>{{ $workDisp }}</td>
 
-                {{-- 詳細リンクは統一パス /attendance/{id} --}}
+                {{-- 詳細は共通の /attendance/{id} へ --}}
                 <td><a href="{{ route('attendance.show', $attendance->id) }}">詳細</a></td>
             </tr>
             @empty

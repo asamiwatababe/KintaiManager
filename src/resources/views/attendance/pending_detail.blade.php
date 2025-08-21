@@ -20,30 +20,30 @@
                 {{ $attendance ? \Carbon\Carbon::parse($attendance->date)->format('Y年n月j日') : '勤怠データなし' }}
             </td>
         </tr>
+
+        {{-- 出勤・退勤（表示用変数を必ず使う） --}}
         <tr>
             <th>出勤・退勤</th>
-            <td>
-                {{ $attendance && $attendance->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '--:--' }}
-            </td>
-            <td>
-                {{ $attendance && $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '--:--' }}
-            </td>
+            <td>{{ $displayClockIn  !== '' ? $displayClockIn  : '--:--' }}</td>
+            <td>{{ $displayClockOut !== '' ? $displayClockOut : '--:--' }}</td>
         </tr>
+
+        {{-- 休憩（表示用変数を必ず使う） --}}
         <tr>
             <th>休憩</th>
-            <td>
-                {{ $attendance && $attendance->breaks && $attendance->breaks->get(0) && $attendance->breaks->get(0)->break_in ? \Carbon\Carbon::parse($attendance->breaks->get(0)->break_in)->format('H:i') : '--:--' }}
-            </td>
-            <td>
-                {{ $attendance && $attendance->breaks && $attendance->breaks->get(0) && $attendance->breaks->get(0)->break_out ? \Carbon\Carbon::parse($attendance->breaks->get(0)->break_out)->format('H:i') : '--:--' }}
-            </td>
+            <td>{{ $break1In  !== '' ? $break1In  : '--:--' }}</td>
+            <td>{{ $break1Out !== '' ? $break1Out : '--:--' }}</td>
         </tr>
+
+        {{-- 備考（表示用変数を必ず使う） --}}
         <tr>
             <th>備考</th>
-            <td colspan="2">{{ $attendance && $attendance->note ? $attendance->note : '―' }}</td>
+            <td colspan="2">{{ trim($displayNote ?? '') !== '' ? trim($displayNote) : '―' }}</td>
         </tr>
     </table>
 
+    @if(!empty($isLocked))
     <p class="note">※承認待ちのため修正はできません。</p>
+    @endif
 </div>
 @endsection

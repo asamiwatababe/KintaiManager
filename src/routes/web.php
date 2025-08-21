@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
 // ==========================
 // 申請一覧・詳細・承認（共通パス）
 // ==========================
+
 Route::get('/stamp_correction_request/list', function () {
     $user = Auth::user();
     if (!$user) return redirect()->route('login');

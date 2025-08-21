@@ -178,22 +178,56 @@ class AttendanceController extends Controller
         return redirect()->route('attendance')->with('success', 'お疲れ様でした。');
     }
 
-    public function showDetail($id)
+    public function showDetail(int $id)
     {
-        $attendance = Attendance::with(['user', 'breaks'])->findOrFail($id);
+        // 勤怠本体
+        $attendance = \App\Models\Attendance::with(['user', 'breaks'])->findOrFail($id);
 
-        // 管理者なら管理者用の詳細ビューへ
-        if (Auth::user()->is_admin ?? false) {
-            // 既存の admin ビューは $attendance を渡せば使える想定
-            return view('admin.attendance.admindetail', compact('attendance'));
+        // ★ 承認待ち/承認済みを attendance_id で直に検索（リレーション名に依存しない）
+        $pending = \App\Models\StampCorrectionRequest::where('attendance_id', $id)
+            ->whereRaw("LOWER(TRIM(status)) = 'pending'")   // 末尾スペースや大文字小文字ゆらぎ対策
+            ->orderByDesc('id')                              // created_atが無くても新しい順になるように
+            ->first();
+
+        $approved = null;
+        if (!$pending) {
+            $approved = \App\Models\StampCorrectionRequest::where('attendance_id', $id)
+                ->whereRaw("LOWER(TRIM(status)) = 'approved'")
+                ->orderByDesc('id')
+                ->first();
         }
 
-        // 一般ユーザー用ビュー
-        $breaks = $attendance->breaks->sortBy('break_in')->values();
-        $user   = $attendance->user;
+        // 画面に出す表示ソース（pending → approved → attendance）
+        $src = $pending ?? $approved ?? $attendance;
 
-        return view('attendance.detail', compact('attendance', 'breaks', 'user'));
+        // H:i で表示用に整形
+        $fmt = fn($t) => $t ? \Carbon\Carbon::parse($t)->format('H:i') : '';
+
+        // 休憩：申請側に break_in/out があれば最優先。無ければ勤怠の1本目休憩。
+        $sorted = optional($attendance->breaks)->sortBy('break_in')->values();
+        $b1 = $sorted && $sorted->get(0) ? $sorted->get(0) : null;
+
+        $breakIn  = $src->break_in  ?? ($src->break_1_start ?? ($b1 ? $b1->break_in  : null));
+        $breakOut = $src->break_out ?? ($src->break_1_end   ?? ($b1 ? $b1->break_out : null));
+
+        // pending時は承認待ち画面、無ければ通常詳細へ
+        $view = $pending ? 'attendance.pending_detail' : 'attendance.detail';
+
+        return view($view, [
+            'attendance'       => $attendance,
+            'user'             => $attendance->user,
+            'breaks'           => $sorted ?? collect(),
+
+            // ★ Bladeが参照する“表示用変数”
+            'displayClockIn'   => $fmt($src->clock_in ?? null),
+            'displayClockOut'  => $fmt($src->clock_out ?? null),
+            'break1In'         => $fmt($breakIn),
+            'break1Out'        => $fmt($breakOut),
+            'displayNote'      => $src->note ?? $src->memo ?? '',
+            'isLocked'         => (bool) $pending, // 承認待ちは編集不可表示用
+        ]);
     }
+
 
 
     public function requestUpdate(AttendanceCorrectionRequest $request, int $id)
