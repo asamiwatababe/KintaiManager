@@ -1,39 +1,57 @@
 # KintaiManager(coachtech 勤怠管理アプリ)
 
-## Dockerビルド
-- `$ git clone git@github.com:asamiwatababe/KintaiManager.git`
-- `$ docker-compose up -d --build`
+## セットアップ（Docker）
 
-## Laravel環境構築(すべての artisan コマンドや composer install は PHPコンテナ内で実行してください。)
+```
+# 1) リポジトリ取得
+git clone git@github.com:asamiwatababe/KintaiManager.git
+cd KintaiManager
 
-### 1) コンテナの起動
-```bash
-- `$ docker compose up -d --build
-- `$ docker-compose exec php bash`
-- `$ composer install`
-- `$ cp .env.example .env`環境変数を変更
-- DB_CONNECTION=mysql
-- DB_HOST=mysql
-- DB_PORT=3306
-- DB_DATABASE=laravel_db
-- DB_USERNAME=laravel_user
-- DB_PASSWORD=laravel_pass
+# 2) コンテナ起動（Docker Compose v2）
+docker-compose up -d --build
+```
 
-- `$ php artisan key:generate`
-- `$ php artisan migrate --seed`
+## Laravel環境構築
+
+以降の composer / artisan は PHPコンテナ内 で実行します。
+```
+# PHPコンテナに入る
+docker compose exec php bash
+# 旧: docker-compose exec php bash
+
+# 依存インストール
+composer install
+
+# 環境ファイル
+cp .env.example .env
+
+# .env（DB設定の例：docker-compose.yml に合わせる）
+# APP_URL=http://localhost
+# DB_CONNECTION=mysql
+# DB_HOST=mysql
+# DB_PORT=3306
+# DB_DATABASE=laravel_db
+# DB_USERNAME=laravel_user
+# DB_PASSWORD=laravel_pass
+
+# アプリキー
+php artisan key:generate
+
+# マイグレーション & 初期データ
+php artisan migrate --seed
+```
 
 ## 開発環境
-- トップ画面：[http://localhost/]
 - 会員登録画面：[http://localhost/register]
 - ログイン画面：[http://localhost/login]
+- phpMyAdmin: http://localhost:8080
 
 ## 使用技術（実行環境）
-- Laravel 8.75
-- PHP 7.4.9
-- MySQL 8.0.26
-- Docker / Docker Compose
-- GitHub
-- phpMyAdmin（http://localhost:8080）
+Laravel 8.75 / PHP 7.4.9
+MySQL 8.0.26
+Docker / Docker Compose
+GitHub
+phpMyAdmin
 
 ## ER図
 ![ER図](./er-diagram.svg)
@@ -41,32 +59,83 @@
 ## URL
 - 開発環境：http://localhost/
 
-## テスト実行
+## テストアカウント
 
-> すべてのコマンドは **PHP コンテナ内**（`docker-compose exec php bash`）で実行してください。  
-> ローカル実行の方は「コンテナ内」を読み替えてください。
+一般ユーザー（2名）
+name: 山田太郎
+email: yamada@example.com
+password: password
 
-### 1) テスト用環境の準備（初回のみ）
+name: 鈴木花子
+email: suzuki@example.com
+password: password
+
+管理者ユーザー
+name: 管理者
+email: admin@example.com
+password: password
+
+//まだ投入していない場合は PHPコンテナ内で
+php artisan db:seed --class=DemoDataSeeder を実行してください。
+これらのアカウントは email_verified_at 済みです。
+
+## PHPUnit を利用したテスト
+
+以降は PHPコンテナ内 で実行します。
+
+
+### テスト用データベースの作成
 ```bash
-# 1) 複製
-cp .env .env.testing
+# root パスワードは docker-compose.yml の MYSQL_ROOT_PASSWORD を使用
+docker compose exec mysql sh -lc \
+'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" \
+ -e "CREATE DATABASE IF NOT EXISTS test_database CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"'
+```
 
-# 2) APP_KEY 発行（.env.testing に対して）
+### .env.testing を用意
+```
+cp -n .env .env.testing
+```
+//.env.testing を開いて テストDB向けに調整してください
+APP_ENV=testing
+APP_URL=http://localhost
+# APP_KEY は後で発行
+
+.env.testing の設定は以下に合わせてください：
+DB_HOST： MySQLコンテナのサービス名（例：mysql）
+DB_DATABASE： 作成したテスト用DB名（例：test_database）
+DB_USERNAMEDB_PASSWORD： docker-compose.yml の MYSQL_USER/MYSQL_PASSWORD と一致DB_CONNECTION=mysql
+
+DB_HOST=mysql                 
+DB_PORT=3306
+DB_DATABASE=test_database     
+DB_USERNAME=laravel_user      
+DB_PASSWORD=laravel_pass      
+
+CACHE_DRIVER=array
+SESSION_DRIVER=array
+QUEUE_CONNECTION=sync
+MAIL_MAILER=log           
+
+//キー発行 & マイグレーション（テストDB）
+```
 php artisan key:generate --env=testing
-
-# 3) マイグレーション + シード（テスト用DB）
 php artisan migrate:fresh --seed --env=testing
+```
 
-# 4) テスト実行
+//テスト実行
+```
 php artisan test --env=testing
+# 高速化する場合
+php artisan test --env=testing --parallel
 ```
 
 ## ダミーデータ
 このリポジトリにはダミーデータ Seeder を用意しています。
 
-### 実行手順
 ```bash
 # PHP コンテナ内で実行
 php artisan migrate:fresh --seed
 # もしくは DemoDataSeeder のみを実行
 php artisan db:seed --class=DemoDataSeeder
+```
