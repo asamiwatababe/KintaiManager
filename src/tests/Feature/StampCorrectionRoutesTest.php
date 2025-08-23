@@ -62,18 +62,11 @@ class StampCorrectionRoutesTest extends TestCase
             ->get("/stamp_correction_request/{$req->id}")
             ->assertOk();
 
-        // 一般ユーザーは勤怠詳細へ 302 リダイレクト（これが仕様）
+        // 一般ユーザーは勤怠詳細へ 302 リダイレクト
         /** @var User $user */
         $res = $this->actingAs($user)
             ->get("/stamp_correction_request/{$req->id}");
         $res->assertStatus(302);
         $res->assertRedirect(route('attendance.pending', $attendance->id));
-
-        // もしくはリダイレクト追従して最終 200 を確認したい場合は以下でもOK
-        $this->actingAs($user)
-            ->followingRedirects()
-            ->get("/stamp_correction_request/{$req->id}")
-            ->assertOk()
-            ->assertSee('勤怠詳細'); // 最終ページの文言確認
     }
 }

@@ -21,21 +21,21 @@
             </td>
         </tr>
 
-        {{-- 出勤・退勤（表示用変数を必ず使う） --}}
+        {{-- 出勤・退勤 --}}
         <tr>
             <th>出勤・退勤</th>
             <td>{{ $displayClockIn  !== '' ? $displayClockIn  : '--:--' }}</td>
             <td>{{ $displayClockOut !== '' ? $displayClockOut : '--:--' }}</td>
         </tr>
 
-        {{-- 休憩（表示用変数を必ず使う） --}}
+        {{-- 休憩 --}}
         <tr>
             <th>休憩</th>
             <td>{{ $break1In  !== '' ? $break1In  : '--:--' }}</td>
             <td>{{ $break1Out !== '' ? $break1Out : '--:--' }}</td>
         </tr>
 
-        {{-- 備考（表示用変数を必ず使う） --}}
+        {{-- 備考 --}}
         <tr>
             <th>備考</th>
             <td colspan="2">{{ trim($displayNote ?? '') !== '' ? trim($displayNote) : '―' }}</td>

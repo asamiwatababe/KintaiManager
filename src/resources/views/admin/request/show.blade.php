@@ -36,7 +36,6 @@
                 {{ $request->break_out ? \Carbon\Carbon::parse($request->break_out)->format('H:i') : '--:--' }}
             </td>
         </tr>
-        {{-- 休憩2は申請テーブルにカラムがないため表示しません --}}
         <tr>
             <th>備考</th>
             <td>{{ $request->note }}</td>

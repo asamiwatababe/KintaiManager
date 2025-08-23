@@ -25,7 +25,7 @@ class DemoDataSeeder extends Seeder
                 ]
             );
 
-            // 一般ユーザー 2名（必要に応じて増やしてOK）
+            // 一般ユーザー 2名
             $staffsData = [
                 ['name' => '山田太郎', 'email' => 'yamada@example.com'],
                 ['name' => '鈴木花子', 'email' => 'suzuki@example.com'],

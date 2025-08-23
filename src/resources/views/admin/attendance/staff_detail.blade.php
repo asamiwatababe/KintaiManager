@@ -53,7 +53,6 @@
                 {{-- 日付は m/d(D) 表示 --}}
                 <td>{{ \Carbon\Carbon::parse($attendance->date)->format('m/d(D)') }}</td>
 
-                {{-- 出退勤は分まで --}}
                 <td>
                     @if ($attendance->clock_in)
                     {{ \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') }}

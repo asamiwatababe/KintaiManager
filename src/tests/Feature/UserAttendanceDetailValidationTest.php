@@ -26,7 +26,7 @@ class UserAttendanceDetailValidationTest extends TestCase
         $res = $this->from(route('attendance.show', $attendance->id))
             ->put(route('attendance.update', $attendance->id), [
                 'clock_in'      => '12:00',
-                'clock_out'     => '10:00', // 逆転
+                'clock_out'     => '10:00', 
                 // 休憩は省略（任意）
                 'note'          => 'テスト',
             ]);
@@ -75,7 +75,6 @@ class UserAttendanceDetailValidationTest extends TestCase
         $res = $this->put(route('attendance.update', $attendance->id), [
             'clock_in'      => '09:00',
             'clock_out'     => '18:00',
-            // 2本対応の実装であれば以下のキーが吸収されます。1本実装でも問題なし。
             'break_1_start' => '12:00',
             'break_1_end'   => '13:00',
             'note'          => '時間の修正',
