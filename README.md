@@ -5,10 +5,20 @@
 - `$ docker-compose up -d --build`
 
 ## Laravel環境構築(すべての artisan コマンドや composer install は PHPコンテナ内で実行してください。)
+
+### 1) コンテナの起動
+```bash
+- `$ docker compose up -d --build
 - `$ docker-compose exec php bash`
 - `$ composer install`
-- `$ cp .env.example .env`環境変数を適宜変更
-※ 必要に応じて .env ファイルの内容（DB接続など）を自分の環境に合わせて修正してください
+- `$ cp .env.example .env`環境変数を変更
+- DB_CONNECTION=mysql
+- DB_HOST=mysql
+- DB_PORT=3306
+- DB_DATABASE=laravel_db
+- DB_USERNAME=laravel_user
+- DB_PASSWORD=laravel_pass
+
 - `$ php artisan key:generate`
 - `$ php artisan migrate --seed`
 

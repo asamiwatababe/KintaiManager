@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
     // 一覧
     Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
 
-    // ★詳細：一般/管理者で同じURLに統一（中で役割に応じて表示を出し分け）
+    // 詳細：一般/管理者で同じURLに統一
     Route::get('/attendance/{id}', function (int $id) {
         $user = Auth::user();
         if (!$user) return redirect()->route('login');
@@ -90,18 +90,17 @@ Route::post('/admin/logout', function () {
 })->name('admin.logout');
 
 // ==========================
-// 管理者（/admin 配下）
+// 管理者
 // ==========================
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     // 日次勤怠一覧
     Route::get('/attendance/list', [AdminAttendanceController::class, 'index'])->name('attendance.list');
 
-    // ★旧URL互換：/admin/attendance/{id} → /attendance/{id} にリダイレクト
     Route::get('/attendance/{id}', function (int $id) {
         return redirect()->route('attendance.show', $id);
     })->whereNumber('id')->name('attendance.show');
 
-    // 直接修正（PUT）は管理者のみ
+    // 直接修正（PUT）できるのは管理者のみ
     Route::put('/attendance/{id}/update', [AdminAttendanceController::class, 'adminUpdate'])
         ->whereNumber('id')->name('attendance.update');
 
