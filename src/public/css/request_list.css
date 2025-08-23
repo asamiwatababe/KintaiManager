@@ -73,3 +73,8 @@ a:hover {
 .tab.active {
     color: black;
 }
+
+.staff_csv {
+    text-align: center;
+    margin-top: 30px;
+}
