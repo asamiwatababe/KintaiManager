@@ -9,6 +9,7 @@ cd KintaiManager
 
 # 2) コンテナ起動（Docker Compose v2）
 docker-compose up -d --build
+# ※ 旧環境: docker-compose up -d --build
 ```
 
 ## Laravel環境構築
@@ -34,10 +35,10 @@ cp .env.example .env
 # DB_USERNAME=laravel_user
 # DB_PASSWORD=laravel_pass
 
-# アプリキー
+# アプリキー発行
 php artisan key:generate
 
-# マイグレーション & 初期データ
+# マイグレーション & 初期データ投入
 php artisan migrate --seed
 ```
 
@@ -56,24 +57,21 @@ phpMyAdmin
 ## ER図
 ![ER図](./er-diagram.svg)
 
-## URL
-- 開発環境：http://localhost/
-
-## テストアカウント
+## テストアカウント（Seeder で作成済み）
 
 一般ユーザー（2名）
-name: 山田太郎
-email: yamada@example.com
-password: password
+- name: 山田太郎
+- email: yamada@example.com
+- password: password
 
-name: 鈴木花子
-email: suzuki@example.com
-password: password
+- name: 鈴木花子
+- email: suzuki@example.com
+- password: password
 
 管理者ユーザー
-name: 管理者
-email: admin@example.com
-password: password
+- name: 管理者
+- email: admin@example.com
+- password: password
 
 //まだ投入していない場合は PHPコンテナ内で
 php artisan db:seed --class=DemoDataSeeder を実行してください。
@@ -97,25 +95,22 @@ docker compose exec mysql sh -lc \
 cp -n .env .env.testing
 ```
 //.env.testing を開いて テストDB向けに調整してください
+```
 APP_ENV=testing
 APP_URL=http://localhost
-# APP_KEY は後で発行
 
-.env.testing の設定は以下に合わせてください：
-DB_HOST： MySQLコンテナのサービス名（例：mysql）
-DB_DATABASE： 作成したテスト用DB名（例：test_database）
-DB_USERNAMEDB_PASSWORD： docker-compose.yml の MYSQL_USER/MYSQL_PASSWORD と一致DB_CONNECTION=mysql
-
-DB_HOST=mysql                 
+DB_CONNECTION=mysql
+DB_HOST=mysql                 # MySQL コンテナのサービス名
 DB_PORT=3306
-DB_DATABASE=test_database     
-DB_USERNAME=laravel_user      
-DB_PASSWORD=laravel_pass      
+DB_DATABASE=test_database     # 上で作成した DB 名
+DB_USERNAME=laravel_user      # docker-compose.yml の MYSQL_USER と一致
+DB_PASSWORD=laravel_pass      # docker-compose.yml の MYSQL_PASSWORD と一致
 
 CACHE_DRIVER=array
 SESSION_DRIVER=array
 QUEUE_CONNECTION=sync
-MAIL_MAILER=log           
+MAIL_MAILER=log               # メールはログ出力
+```
 
 //キー発行 & マイグレーション（テストDB）
 ```
